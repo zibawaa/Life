@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Card, Field } from '../components/Primitives';
 import { calculateTargets } from '../data/nutrition';
 import { generateId } from '../data/defaults';
+import { parseWorkoutSplitText } from '../data/workoutSplitParser';
 import type { AppSettings, DashboardExport, PlannedExercise, ProfileSettings, WorkoutSplitDay } from '../types';
 
 const serializeExercises = (exercises: PlannedExercise[]) =>
@@ -39,6 +40,7 @@ export function SettingsScreen({
 }) {
   const [draft, setDraft] = useState<AppSettings>(settings);
   const [importText, setImportText] = useState('');
+  const [splitPaste, setSplitPaste] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => setDraft(settings), [settings]);
@@ -86,6 +88,17 @@ export function SettingsScreen({
     if (!window.confirm('Reset all local Life Dashboard data on this device?')) return;
     await onReset();
     setMessage('Local data reset.');
+  };
+
+  const importWorkoutSplit = () => {
+    try {
+      const parsed = parseWorkoutSplitText(splitPaste);
+      setDraft((current) => ({ ...current, workoutSplit: parsed.days }));
+      setSplitPaste('');
+      setMessage(`Split parsed into ${parsed.days.length} days, ${parsed.exerciseCount} exercises, and ${parsed.restDayCount} rest days. Review it, then save settings.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not parse that split.');
+    }
   };
 
   return (
@@ -147,6 +160,22 @@ export function SettingsScreen({
         <Field label="Split start date" hint="This date defines Day 1 of the repeating seven-day cycle.">
           <input type="date" value={draft.splitStartDate} onChange={(event) => setDraft((current) => ({ ...current, splitStartDate: event.target.value }))} />
         </Field>
+        <div className="split-import-panel">
+          <div className="editor-head">
+            <h3>Paste full split</h3>
+            <button type="button" className="secondary-button" onClick={importWorkoutSplit} disabled={!splitPaste.trim()}>
+              Auto-categorise
+            </button>
+          </div>
+          <Field label="Full split text" hint="Paste your full Day 1-7 plan. It will fill the split editor below in day order.">
+            <textarea
+              className="split-paste-textarea"
+              value={splitPaste}
+              onChange={(event) => setSplitPaste(event.target.value)}
+              placeholder={'DAY GYM SPLIT\nDay 1 - Upper A...\nIncline Bench Press 2x6'}
+            />
+          </Field>
+        </div>
         <div className="split-editor">
           {draft.workoutSplit.map((day) => (
             <section key={day.dayIndex} className="split-day-editor">
@@ -212,4 +241,3 @@ export function SettingsScreen({
     </div>
   );
 }
-

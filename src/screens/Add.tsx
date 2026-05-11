@@ -4,6 +4,7 @@ import { BarcodeScanner } from '../components/BarcodeScanner';
 import { AreaTabs, Card, Field, areaLabels, parseTags } from '../components/Primitives';
 import { generateId, todayKey } from '../data/defaults';
 import { getActiveSplitDay } from '../data/nutrition';
+import { parseWorkoutSplitText } from '../data/workoutSplitParser';
 import type {
   AppSettings,
   AreaKey,
@@ -251,6 +252,7 @@ export function AddScreen({
   editingEntry,
   onTypeChange,
   onSave,
+  onSaveSettings,
   onSaveLocalFood,
   onCancelEdit
 }: {
@@ -259,11 +261,14 @@ export function AddScreen({
   editingEntry: DashboardEntry | null;
   onTypeChange: (type: EntryType) => void;
   onSave: (entry: DashboardEntry) => Promise<void>;
+  onSaveSettings: (settings: AppSettings) => Promise<void>;
   onSaveLocalFood: (food: LocalFood) => Promise<void>;
   onCancelEdit: () => void;
 }) {
   const [form, setForm] = useState(() => (editingEntry ? entryToForm(editingEntry, settings) : blankForm(activeType, settings)));
   const [message, setMessage] = useState('');
+  const [splitPaste, setSplitPaste] = useState('');
+  const [splitImportMessage, setSplitImportMessage] = useState('');
 
   useEffect(() => {
     setForm(editingEntry ? entryToForm(editingEntry, settings) : blankForm(activeType, settings));
@@ -324,6 +329,36 @@ export function AddScreen({
     }));
   };
 
+  const applySplitDayToForm = (splitDay: ReturnType<typeof getActiveSplitDay>) => {
+    setForm((current) => ({
+      ...current,
+      title: defaultTitle('gym', splitDay.category),
+      splitDayIndex: splitDay.dayIndex,
+      splitLabel: splitDay.label,
+      category: splitDay.category,
+      durationMinutes: splitDay.isRest ? 0 : current.durationMinutes || 60,
+      exercises: splitDay.exercises.map((exercise) => ({
+        id: generateId('set'),
+        exerciseName: exercise.name,
+        sets: exercise.targetSets,
+        reps: exercise.targetReps,
+        weightKg: exercise.targetWeightKg
+      }))
+    }));
+  };
+
+  const importWorkoutSplit = async () => {
+    try {
+      const parsed = parseWorkoutSplitText(splitPaste);
+      await onSaveSettings({ ...settings, workoutSplit: parsed.days });
+      applySplitDayToForm(getActiveSplitDay(parsed.days, settings.splitStartDate));
+      setSplitPaste('');
+      setSplitImportMessage(`Imported ${parsed.days.length} days, ${parsed.exerciseCount} exercises, ${parsed.restDayCount} rest days.`);
+    } catch (error) {
+      setSplitImportMessage(error instanceof Error ? error.message : 'Could not import that split.');
+    }
+  };
+
   return (
     <div className="screen-stack">
       <section className="page-title">
@@ -380,6 +415,24 @@ export function AddScreen({
 
         {activeType === 'gym' && (
           <>
+            <div className="split-import-panel">
+              <div className="editor-head">
+                <h3>Paste full split</h3>
+                <button type="button" className="secondary-button" onClick={importWorkoutSplit} disabled={!splitPaste.trim()}>
+                  Auto-categorise
+                </button>
+              </div>
+              <Field label="Full split text" hint="Paste Day 1-7. The app will save the split and fill this workout from today's day.">
+                <textarea
+                  className="split-paste-textarea"
+                  value={splitPaste}
+                  onChange={(event) => setSplitPaste(event.target.value)}
+                  placeholder={'DAY GYM SPLIT\nDay 1 - Upper A...\nIncline Bench Press 2x6'}
+                />
+              </Field>
+              {splitImportMessage && <p className="form-message">{splitImportMessage}</p>}
+            </div>
+
             <div className="split-banner">
               <strong>{activeSplit.label}: {activeSplit.category}</strong>
               <span>{activeSplit.isRest ? 'Rest day auto-categorised from your split.' : 'Auto-categorised from your split.'}</span>
@@ -520,4 +573,3 @@ export function AddScreen({
     </div>
   );
 }
-

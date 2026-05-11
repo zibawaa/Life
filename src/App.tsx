@@ -50,73 +50,77 @@ export default function App() {
     setScreen('home');
   };
 
-  if (!dashboard.settings.onboardingCompleted) {
-    return <OnboardingScreen settings={dashboard.settings} onComplete={dashboard.updateSettings} />;
-  }
-
   return (
-    <AppShell
-      screen={screen}
-      onNavigate={navigate}
-      onAreaShortcut={(area) => {
-        setSelectedArea(area);
-        setScreen('areas');
-      }}
-    >
-      {screen === 'home' && (
-        <HomeScreen
-          entries={dashboard.entries}
-          settings={dashboard.settings}
-          insights={dashboard.insights}
-          onAdd={startAdd}
-          onEdit={startEdit}
-          onDelete={dashboard.removeEntry}
-        />
-      )}
+    <>
+      <AppShell
+        screen={screen}
+        onNavigate={navigate}
+        onAreaShortcut={(area) => {
+          setSelectedArea(area);
+          setScreen('areas');
+        }}
+        dimmed={!dashboard.settings.onboardingCompleted}
+      >
+        {screen === 'home' && (
+          <HomeScreen
+            entries={dashboard.entries}
+            settings={dashboard.settings}
+            insights={dashboard.insights}
+            onAdd={startAdd}
+            onEdit={startEdit}
+            onDelete={dashboard.removeEntry}
+          />
+        )}
 
-      {screen === 'add' && (
-        <AddScreen
-          activeType={activeEntryType}
-          settings={dashboard.settings}
-          editingEntry={editingEntry}
-          onTypeChange={setActiveEntryType}
-          onSave={saveEntry}
-          onSaveLocalFood={dashboard.upsertLocalFood}
-          onCancelEdit={() => {
-            setEditingEntry(null);
-            setScreen('home');
-          }}
-        />
-      )}
+        {screen === 'add' && (
+          <AddScreen
+            activeType={activeEntryType}
+            settings={dashboard.settings}
+            editingEntry={editingEntry}
+            onTypeChange={setActiveEntryType}
+            onSave={saveEntry}
+            onSaveSettings={dashboard.updateSettings}
+            onSaveLocalFood={dashboard.upsertLocalFood}
+            onCancelEdit={() => {
+              setEditingEntry(null);
+              setScreen('home');
+            }}
+          />
+        )}
 
-      {screen === 'insights' && <InsightsScreen insights={dashboard.insights} />}
+        {screen === 'insights' && <InsightsScreen insights={dashboard.insights} />}
 
-      {screen === 'areas' && (
-        <AreasScreen
-          selectedArea={selectedArea}
-          entries={dashboard.entries}
-          settings={dashboard.settings}
-          insights={dashboard.insights}
-          onAreaChange={setSelectedArea}
-          onAdd={startAdd}
-          onEdit={startEdit}
-          onDelete={dashboard.removeEntry}
-        />
-      )}
+        {screen === 'areas' && (
+          <AreasScreen
+            selectedArea={selectedArea}
+            entries={dashboard.entries}
+            settings={dashboard.settings}
+            insights={dashboard.insights}
+            onAreaChange={setSelectedArea}
+            onAdd={startAdd}
+            onEdit={startEdit}
+            onDelete={dashboard.removeEntry}
+          />
+        )}
 
-      {screen === 'settings' && (
-        <SettingsScreen
-          settings={dashboard.settings}
-          onSaveSettings={dashboard.updateSettings}
-          onExport={dashboard.exportData}
-          onImport={dashboard.importData}
-          onReset={dashboard.resetData}
-        />
-      )}
+        {screen === 'settings' && (
+          <SettingsScreen
+            settings={dashboard.settings}
+            onSaveSettings={dashboard.updateSettings}
+            onExport={dashboard.exportData}
+            onImport={dashboard.importData}
+            onReset={dashboard.resetData}
+          />
+        )}
 
-      {!['home', 'add', 'insights', 'areas', 'settings'].includes(screen) && (
-        <EmptyState title="Screen missing" body="Choose another area from the navigation." />
+        {!['home', 'add', 'insights', 'areas', 'settings'].includes(screen) && (
+          <EmptyState title="Screen missing" body="Choose another area from the navigation." />
+        )}
+      </AppShell>
+
+      {!dashboard.settings.onboardingCompleted && (
+        <OnboardingScreen settings={dashboard.settings} onComplete={dashboard.updateSettings} />
       )}
-    </AppShell>
+    </>
   );
 }

@@ -15,12 +15,14 @@ export function AppShell({
   screen,
   onNavigate,
   onAreaShortcut,
-  children
+  children,
+  dimmed = false
 }: {
   screen: Screen;
   onNavigate: (screen: Screen) => void;
   onAreaShortcut: (area: AreaKey) => void;
   children: React.ReactNode;
+  dimmed?: boolean;
 }) {
   const filterDrag = useHorizontalDrag<HTMLDivElement>();
   const filters: Array<{ key: 'all' | AreaKey; label: string; icon?: LucideIcon }> = [
@@ -35,7 +37,7 @@ export function AppShell({
   ];
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${dimmed ? ' app-shell--dimmed' : ''}`} aria-hidden={dimmed}>
       <header className="app-header">
         <div>
           <h1>Life Dashboard</h1>
