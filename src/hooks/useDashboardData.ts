@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AppSettings, DashboardEntry, DashboardExport, LocalFood } from '../types';
+import type { AppSettings, DashboardEntry, DashboardExport, LocalFood, WeightLog } from '../types';
 import {
   deleteEntry,
+  deleteWeightLog,
   exportDashboardData,
   getSettings,
   importDashboardData,
   listEntries,
   listLocalFoods,
+  listWeightLogs,
   putSettings,
   resetDashboardData,
   saveEntry,
-  saveLocalFood
+  saveLocalFood,
+  saveWeightLog
 } from '../data/db';
 import { buildInsights } from '../data/insights';
 
@@ -18,14 +21,16 @@ export function useDashboardData() {
   const [entries, setEntries] = useState<DashboardEntry[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [localFoods, setLocalFoods] = useState<LocalFood[]>([]);
+  const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [nextSettings, nextEntries, nextFoods] = await Promise.all([getSettings(), listEntries(), listLocalFoods()]);
+    const [nextSettings, nextEntries, nextFoods, nextWeightLogs] = await Promise.all([getSettings(), listEntries(), listLocalFoods(), listWeightLogs()]);
     setSettings(nextSettings);
     setEntries(nextEntries);
     setLocalFoods(nextFoods);
+    setWeightLogs(nextWeightLogs);
     setLoading(false);
   }, []);
 
@@ -68,6 +73,22 @@ export function useDashboardData() {
     [refresh]
   );
 
+  const upsertWeightLog = useCallback(
+    async (log: WeightLog) => {
+      await saveWeightLog(log);
+      await refresh();
+    },
+    [refresh]
+  );
+
+  const removeWeightLog = useCallback(
+    async (id: string) => {
+      await deleteWeightLog(id);
+      await refresh();
+    },
+    [refresh]
+  );
+
   const exportData = useCallback(() => exportDashboardData(), []);
 
   const importData = useCallback(
@@ -89,6 +110,7 @@ export function useDashboardData() {
     entries,
     settings,
     localFoods,
+    weightLogs,
     insights,
     loading,
     refresh,
@@ -96,9 +118,10 @@ export function useDashboardData() {
     upsertEntry,
     removeEntry,
     upsertLocalFood,
+    upsertWeightLog,
+    removeWeightLog,
     exportData,
     importData,
     resetData
   };
 }
-

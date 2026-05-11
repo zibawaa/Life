@@ -1537,6 +1537,398 @@ select:focus {
   height: 280px;
 }
 
+.food-screen {
+  position: relative;
+}
+
+.food-date-row {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.food-date-row .field {
+  gap: 4px;
+}
+
+.food-daily-card {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(234, 220, 192, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.food-ring {
+  width: 142px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  background:
+    radial-gradient(circle at center, var(--paper) 0 58%, transparent 59%),
+    conic-gradient(var(--olive) var(--food-progress), rgba(112, 128, 73, 0.16) 0);
+  color: var(--olive-dark);
+}
+
+.food-ring strong {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.food-ring span {
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.food-daily-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.food-daily-copy h3,
+.meal-slot-head strong,
+.food-drawer-head h3,
+.selected-food-panel h4 {
+  margin: 0;
+  color: var(--olive-dark);
+}
+
+.food-daily-copy p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.macro-bar {
+  display: grid;
+  grid-template-columns: 74px minmax(80px, auto);
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.macro-bar span {
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.macro-bar strong {
+  color: var(--ink);
+  text-align: right;
+}
+
+.macro-bar i {
+  grid-column: 1 / -1;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(112, 128, 73, 0.14);
+}
+
+.macro-bar b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--olive), #94a15d);
+}
+
+.food-daily-actions,
+.meal-slot-actions,
+.recipe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.meal-slot-list {
+  display: grid;
+  gap: 12px;
+}
+
+.meal-slot-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(234, 220, 192, 0.72);
+  overflow: hidden;
+}
+
+.meal-slot-head {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  text-align: left;
+  color: var(--ink);
+}
+
+.meal-slot-head span {
+  display: grid;
+  gap: 3px;
+}
+
+.meal-slot-head em {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.meal-slot-head svg {
+  transition: transform 160ms ease;
+}
+
+.meal-slot-head svg.open {
+  transform: rotate(180deg);
+}
+
+.meal-slot-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+
+.food-item-list,
+.food-result-list,
+.recipe-ingredient-list {
+  display: grid;
+  gap: 8px;
+}
+
+.food-item-row,
+.food-result-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(79, 95, 49, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 244, 219, 0.72);
+  padding: 10px 12px;
+}
+
+.food-item-row div,
+.food-result-list button span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.food-item-row strong,
+.food-result-list strong {
+  color: var(--ink);
+}
+
+.food-item-row span,
+.food-result-list em,
+.recipe-total span {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.food-item-row button,
+.food-drawer-head button {
+  border: 0;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: var(--olive-dark);
+  background: rgba(112, 128, 73, 0.1);
+}
+
+.food-fab {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: calc(92px + env(safe-area-inset-bottom));
+  z-index: 18;
+  width: 62px;
+  height: 62px;
+  border: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #fff8e8;
+  background: var(--olive);
+  box-shadow: 0 18px 38px rgba(80, 96, 50, 0.32);
+}
+
+.food-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: end center;
+  padding: 18px;
+  background: rgba(52, 55, 43, 0.26);
+  backdrop-filter: blur(2px);
+}
+
+.food-drawer {
+  width: min(720px, 100%);
+  max-height: min(860px, calc(100dvh - 32px));
+  overflow-y: auto;
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255, 248, 232, 0.99), rgba(239, 224, 196, 0.99));
+  box-shadow: 0 28px 90px rgba(32, 31, 24, 0.34);
+}
+
+.food-drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.food-drawer-head h3 {
+  font-size: 1.6rem;
+}
+
+.food-drawer-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.food-drawer-tabs button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--olive-dark);
+  background: var(--paper);
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.food-drawer-tabs button.active,
+.food-result-list button.active {
+  color: #fff8e8;
+  background: var(--olive);
+}
+
+.food-drawer-panel,
+.selected-food-panel,
+.weight-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.food-search-input {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--paper);
+  padding: 0 12px;
+}
+
+.food-search-input input {
+  border: 0;
+  box-shadow: none;
+  padding-left: 0;
+}
+
+.selected-food-panel,
+.weight-panel {
+  border: 1px solid rgba(79, 95, 49, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 244, 219, 0.52);
+  padding: 12px;
+}
+
+.selected-food-macros {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.selected-food-macros span,
+.recipe-total {
+  border-radius: 999px;
+  background: rgba(112, 128, 73, 0.12);
+  color: var(--olive-dark);
+  padding: 9px 10px;
+  text-align: center;
+  font-weight: 900;
+}
+
+.food-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--olive-dark);
+  font-weight: 850;
+}
+
+.recipe-ingredient-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.4fr) repeat(4, minmax(62px, 0.7fr));
+  gap: 8px;
+}
+
+.recipe-total {
+  display: grid;
+  gap: 2px;
+  border-radius: 14px;
+}
+
+.weight-save {
+  align-self: end;
+}
+
+.weight-chart {
+  display: grid;
+  gap: 8px;
+}
+
+.weight-chart svg {
+  width: 100%;
+  height: 170px;
+  border-radius: 16px;
+  background:
+    linear-gradient(rgba(112, 128, 73, 0.1) 1px, transparent 1px) 0 0 / 100% 25%,
+    rgba(255, 244, 219, 0.58);
+  border: 1px solid var(--line);
+}
+
+.weight-chart line {
+  stroke: rgba(217, 121, 77, 0.65);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.weight-chart polyline {
+  fill: none;
+  stroke: var(--olive);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.weight-chart circle {
+  fill: var(--olive-dark);
+}
+
+.weight-chart span {
+  color: var(--muted);
+  font-weight: 850;
+}
+
 .onboarding-overlay {
   position: fixed;
   inset: 0;
@@ -2048,5 +2440,71 @@ select:focus {
 
   .onboarding-cat {
     display: none;
+  }
+}
+
+@media (max-width: 699px) {
+  .food-date-row {
+    grid-template-columns: 1fr;
+  }
+
+  .food-daily-card {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding: 16px;
+  }
+
+  .food-daily-copy {
+    width: 100%;
+  }
+
+  .food-daily-actions .primary-button,
+  .food-daily-actions .secondary-button,
+  .meal-slot-actions .secondary-button {
+    flex: 1 1 140px;
+  }
+
+  .food-fab {
+    right: 18px;
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    width: 56px;
+    height: 56px;
+  }
+
+  .food-drawer-backdrop {
+    padding: 10px;
+    align-items: end;
+  }
+
+  .food-drawer {
+    max-height: calc(100dvh - 20px);
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  .food-drawer-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .selected-food-macros,
+  .target-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .recipe-ingredient-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .recipe-ingredient-row input:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .food-item-row,
+  .food-result-list button {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .food-item-row button {
+    grid-column: 2;
   }
 }

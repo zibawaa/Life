@@ -10,6 +10,10 @@ export type BodyGoal = 'lose' | 'maintain' | 'gain';
 
 export type Sex = 'female' | 'male' | 'unspecified';
 
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+
+export type ServingUnit = 'g' | 'oz' | 'serving';
+
 export interface MacroTargets {
   calories: number;
   protein: number;
@@ -26,6 +30,10 @@ export interface ProfileSettings {
   activityLevel: ActivityLevel;
   bodyGoal: BodyGoal;
   monthlyBudget: number;
+  goalWeightKg: number;
+  macroProteinPercent: number;
+  macroCarbsPercent: number;
+  macroFatPercent: number;
 }
 
 export interface PlannedExercise {
@@ -98,13 +106,24 @@ export interface GymEntry extends BaseEntry {
 export interface FoodEntry extends BaseEntry {
   type: 'food';
   meal: string;
+  mealSlot?: MealSlot;
+  foodId?: string;
+  foodName?: string;
+  brand?: string;
+  servingLabel?: string;
+  servingGrams?: number;
+  servingUnit?: ServingUnit;
+  servingAmount?: number;
+  isQuickAdd?: boolean;
+  isRecipe?: boolean;
+  unverified?: boolean;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
   waterMl: number;
   barcode?: string;
-  source?: 'manual' | 'barcode';
+  source?: 'manual' | 'barcode' | 'search' | 'recipe';
 }
 
 export interface FinanceEntry extends BaseEntry {
@@ -142,12 +161,31 @@ export interface LocalFood {
   barcode?: string;
   name: string;
   brand?: string;
+  source?: 'seed' | 'barcode' | 'manual' | 'recipe';
+  baseGrams?: number;
+  servingOptions?: ServingOption[];
+  favourite?: boolean;
+  template?: boolean;
+  unverified?: boolean;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
   servingSize?: string;
   savedAt: string;
+  updatedAt?: string;
+}
+
+export interface ServingOption {
+  label: string;
+  grams: number;
+}
+
+export interface WeightLog {
+  id: string;
+  date: string;
+  weightKg: number;
+  createdAt: string;
 }
 
 export interface Insight {
@@ -162,6 +200,9 @@ export interface ProductLookupResult {
   barcode: string;
   name: string;
   brand?: string;
+  baseGrams?: number;
+  servingOptions?: ServingOption[];
+  unverified?: boolean;
   calories: number;
   protein: number;
   carbs: number;
@@ -175,4 +216,5 @@ export interface DashboardExport {
   settings: AppSettings;
   entries: DashboardEntry[];
   localFoods: LocalFood[];
+  weightLogs?: WeightLog[];
 }

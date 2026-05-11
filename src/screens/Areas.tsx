@@ -1,6 +1,6 @@
-import type { AppSettings, AreaKey, DashboardEntry, EntryType, FinanceEntry, FoodEntry, Insight } from '../types';
-import { calculateTargets, getActiveSplitDay } from '../data/nutrition';
-import { todayKey } from '../data/defaults';
+import type { AppSettings, AreaKey, DashboardEntry, EntryType, FinanceEntry, Insight, LocalFood, WeightLog } from '../types';
+import { getActiveSplitDay } from '../data/nutrition';
+import { FoodCalorieScreen } from './FoodCalorie';
 import {
   AreaTabs,
   Card,
@@ -52,7 +52,13 @@ export function AreasScreen({
   onAreaChange,
   onAdd,
   onEdit,
-  onDelete
+  onDelete,
+  localFoods,
+  weightLogs,
+  onSaveEntry,
+  onSaveLocalFood,
+  onSaveSettings,
+  onSaveWeightLog
 }: {
   selectedArea: AreaKey;
   entries: DashboardEntry[];
@@ -62,14 +68,32 @@ export function AreasScreen({
   onAdd: (type: EntryType) => void;
   onEdit: (entry: DashboardEntry) => void;
   onDelete: (id: string) => void;
+  localFoods: LocalFood[];
+  weightLogs: WeightLog[];
+  onSaveEntry: (entry: DashboardEntry) => Promise<void>;
+  onSaveLocalFood: (food: LocalFood) => Promise<void>;
+  onSaveSettings: (settings: AppSettings) => Promise<void>;
+  onSaveWeightLog: (log: WeightLog) => Promise<void>;
 }) {
+  if (selectedArea === 'food') {
+    return (
+      <FoodCalorieScreen
+        entries={entries}
+        settings={settings}
+        localFoods={localFoods}
+        weightLogs={weightLogs}
+        onSaveEntry={onSaveEntry}
+        onDeleteEntry={onDelete}
+        onSaveLocalFood={onSaveLocalFood}
+        onSaveSettings={onSaveSettings}
+        onSaveWeightLog={onSaveWeightLog}
+      />
+    );
+  }
+
   const areaEntries = entries.filter((entry) => entry.type === selectedArea);
   const areaInsights = insights.filter((insight) => insight.area === selectedArea || insight.area === 'all');
-  const targets = calculateTargets(settings.profile);
   const activeSplit = getActiveSplitDay(settings.workoutSplit, settings.splitStartDate);
-  const todayFood = entries
-    .filter((entry): entry is FoodEntry => entry.type === 'food' && entry.date === todayKey())
-    .reduce((sum, entry) => sum + entry.calories, 0);
   const financeSpend = entries
     .filter((entry): entry is FinanceEntry => entry.type === 'finance' && entry.direction === 'expense')
     .reduce((sum, entry) => sum + entry.amount, 0);
@@ -112,14 +136,6 @@ export function AreasScreen({
                   </span>
                 ))}
               </div>
-            </div>
-          )}
-
-          {selectedArea === 'food' && (
-            <div className="metric-list">
-              <p><strong>{todayFood}</strong><span>kcal today</span></p>
-              <p><strong>{targets.calories}</strong><span>kcal target</span></p>
-              <p><strong>{targets.protein}g</strong><span>protein target</span></p>
             </div>
           )}
 

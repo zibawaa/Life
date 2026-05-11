@@ -139,7 +139,7 @@ DAY 7 - REST
 
 Full rest.`;
 
-const tmpDir = resolve('.tmp');
+const tmpDir = resolve('.tmp-workout-parser');
 const outfile = resolve(tmpDir, 'workoutSplitParser.test.mjs');
 
 try {

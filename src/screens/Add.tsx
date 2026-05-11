@@ -39,7 +39,7 @@ interface AddFormState {
   fat: number;
   waterMl: number;
   barcode: string;
-  source: 'manual' | 'barcode';
+  source: 'manual' | 'barcode' | 'search' | 'recipe';
   direction: 'income' | 'expense';
   amount: number;
   financeCategory: string;
@@ -293,6 +293,8 @@ export function AddScreen({
         protein: toNumber(form.protein),
         carbs: toNumber(form.carbs),
         fat: toNumber(form.fat),
+        source: 'barcode',
+        baseGrams: 100,
         savedAt: new Date().toISOString()
       });
     }

@@ -100,6 +100,12 @@ export default function App() {
             onAdd={startAdd}
             onEdit={startEdit}
             onDelete={dashboard.removeEntry}
+            localFoods={dashboard.localFoods}
+            weightLogs={dashboard.weightLogs}
+            onSaveEntry={dashboard.upsertEntry}
+            onSaveLocalFood={dashboard.upsertLocalFood}
+            onSaveSettings={dashboard.updateSettings}
+            onSaveWeightLog={dashboard.upsertWeightLog}
           />
         )}
 

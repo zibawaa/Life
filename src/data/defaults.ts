@@ -26,7 +26,11 @@ export const defaultProfile: ProfileSettings = {
   heightCm: 175,
   activityLevel: 'moderate',
   bodyGoal: 'maintain',
-  monthlyBudget: 1200
+  monthlyBudget: 1200,
+  goalWeightKg: 75,
+  macroProteinPercent: 30,
+  macroCarbsPercent: 40,
+  macroFatPercent: 30
 };
 
 export const defaultWorkoutSplit = (): WorkoutSplitDay[] => [
