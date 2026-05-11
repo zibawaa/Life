@@ -1,6 +1,7 @@
 import { Activity, BarChart3, CalendarDays, Dumbbell, HeartPulse, Home, Plus, Settings, Smile, Soup, Target, Trophy, WalletCards } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AreaKey, Screen } from '../types';
+import { useHorizontalDrag } from '../hooks/useHorizontalDrag';
 
 const navItems: Array<{ key: Screen; label: string; icon: LucideIcon }> = [
   { key: 'home', label: 'Home', icon: Home },
@@ -21,6 +22,7 @@ export function AppShell({
   onAreaShortcut: (area: AreaKey) => void;
   children: React.ReactNode;
 }) {
+  const filterDrag = useHorizontalDrag<HTMLDivElement>();
   const filters: Array<{ key: 'all' | AreaKey; label: string; icon?: LucideIcon }> = [
     { key: 'all', label: 'All' },
     { key: 'mood', label: 'Mood', icon: Smile },
@@ -48,7 +50,12 @@ export function AppShell({
         </button>
       </header>
 
-      <div className="filter-rail" aria-label="Timeline filters">
+      <div
+        className={`filter-rail drag-scroll ${filterDrag.dragging ? 'dragging' : ''}`}
+        aria-label="Timeline filters"
+        ref={filterDrag.ref}
+        {...filterDrag.dragProps}
+      >
         {filters.map(({ key, label, icon: Icon }) => (
           <button
             key={key}

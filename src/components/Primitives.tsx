@@ -1,4 +1,5 @@
 import type { AreaKey, DashboardEntry, EntryType, Insight } from '../types';
+import { useHorizontalDrag } from '../hooks/useHorizontalDrag';
 
 export const areaLabels: Record<AreaKey, string> = {
   mood: 'Mood',
@@ -63,8 +64,16 @@ export function AreaTabs({
   onChange: (value: AreaKey) => void;
   compact?: boolean;
 }) {
+  const tabDrag = useHorizontalDrag<HTMLDivElement>();
+
   return (
-    <div className={`area-tabs ${compact ? 'compact' : ''}`} role="tablist" aria-label="Life areas">
+    <div
+      className={`area-tabs drag-scroll ${compact ? 'compact' : ''} ${tabDrag.dragging ? 'dragging' : ''}`}
+      role="tablist"
+      aria-label="Life areas"
+      ref={tabDrag.ref}
+      {...tabDrag.dragProps}
+    >
       {(Object.keys(areaLabels) as AreaKey[]).map((key) => (
         <button
           key={key}

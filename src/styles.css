@@ -1011,6 +1011,24 @@ select:focus {
   display: none;
 }
 
+.drag-scroll {
+  cursor: grab;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.drag-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.drag-scroll.dragging {
+  cursor: grabbing;
+}
+
 .filter-rail button {
   flex: 0 0 auto;
   min-height: 50px;
@@ -1475,11 +1493,33 @@ select:focus {
 
 .onboarding-shell {
   min-height: 100vh;
-  width: min(980px, 100%);
+  width: 100%;
   margin: 0 auto;
-  padding: 48px 22px;
+  padding: 28px 18px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(112, 128, 73, 0.1) 0 56px, transparent 57px),
+    radial-gradient(circle at 86% 8%, rgba(217, 121, 77, 0.08) 0 70px, transparent 71px),
+    rgba(247, 235, 212, 0.96);
+}
+
+.onboarding-modal {
+  width: min(980px, 100%);
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
   display: grid;
   gap: 18px;
+  padding: 26px;
+  border: 1px solid rgba(79, 95, 49, 0.18);
+  border-radius: 24px;
+  background: rgba(255, 248, 232, 0.78);
+  box-shadow: 0 30px 80px rgba(70, 56, 31, 0.18);
+  scrollbar-width: none;
+}
+
+.onboarding-modal::-webkit-scrollbar {
+  display: none;
 }
 
 .onboarding-hero {
@@ -1742,7 +1782,14 @@ select:focus {
   }
 
   .onboarding-shell {
-    padding: 28px 14px 34px;
+    padding: 12px;
+    place-items: start center;
+  }
+
+  .onboarding-modal {
+    max-height: calc(100vh - 24px);
+    padding: 16px;
+    border-radius: 22px;
   }
 
   .onboarding-grid {
