@@ -64,7 +64,7 @@ export function buildInsights(entries: DashboardEntry[], settings: AppSettings):
     insights.push({
       id: 'finance-spend',
       title: 'Spending check',
-      body: `You logged £${total.toFixed(2)} in expenses this week. Your rough weekly budget is £${weeklyBudget.toFixed(2)}.`,
+      body: `You logged GBP ${total.toFixed(2)} in expenses this week. Your rough weekly budget is GBP ${weeklyBudget.toFixed(2)}.`,
       area: 'finance',
       tone: total <= weeklyBudget ? 'good' : 'watch'
     });
@@ -108,4 +108,3 @@ export function buildInsights(entries: DashboardEntry[], settings: AppSettings):
 
   return insights;
 }
-

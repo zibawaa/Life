@@ -121,19 +121,19 @@ export function formatEntryDate(dateKey: string) {
 export function entrySummary(entry: DashboardEntry) {
   switch (entry.type) {
     case 'mood':
-      return `${entry.score}/10 mood${entry.tags.length ? ` · ${entry.tags.join(', ')}` : ''}`;
+      return `${entry.score}/10 mood${entry.tags.length ? ` - ${entry.tags.join(', ')}` : ''}`;
     case 'health':
-      return `Severity ${entry.severity}/10 · ${entry.symptom}`;
+      return `Severity ${entry.severity}/10 - ${entry.symptom}`;
     case 'gym':
-      return `${entry.splitLabel} · ${entry.category} · ${entry.exercises.length} exercises`;
+      return `${entry.splitLabel} - ${entry.category} - ${entry.exercises.length} exercises`;
     case 'food':
-      return `${entry.calories} kcal · P ${entry.protein}g · C ${entry.carbs}g · F ${entry.fat}g`;
+      return `${entry.calories} kcal - P ${entry.protein}g - C ${entry.carbs}g - F ${entry.fat}g`;
     case 'finance':
-      return `${entry.direction === 'income' ? '+' : '-'}£${entry.amount.toFixed(2)} · ${entry.category}`;
+      return `${entry.direction === 'income' ? '+' : '-'}GBP ${entry.amount.toFixed(2)} - ${entry.category}`;
     case 'goal':
-      return `${entry.progress}% · ${entry.milestone || 'Progress update'}`;
+      return `${entry.progress}% - ${entry.milestone || 'Progress update'}`;
     case 'bucket':
-      return `${entry.status} · ${entry.priority} priority`;
+      return `${entry.status} - ${entry.priority} priority`;
   }
 }
 

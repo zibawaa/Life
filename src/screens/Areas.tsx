@@ -125,8 +125,8 @@ export function AreasScreen({
 
           {selectedArea === 'finance' && (
             <div className="metric-list">
-              <p><strong>£{financeSpend.toFixed(0)}</strong><span>tracked spend</span></p>
-              <p><strong>£{settings.profile.monthlyBudget}</strong><span>monthly budget</span></p>
+              <p><strong>GBP {financeSpend.toFixed(0)}</strong><span>tracked spend</span></p>
+              <p><strong>GBP {settings.profile.monthlyBudget}</strong><span>monthly budget</span></p>
             </div>
           )}
 
