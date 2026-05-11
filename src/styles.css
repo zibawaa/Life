@@ -30,6 +30,27 @@ body,
   margin: 0;
 }
 
+html,
+body,
+#root,
+.app-shell,
+.screen-panel,
+.onboarding-modal {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+.app-shell::-webkit-scrollbar,
+.screen-panel::-webkit-scrollbar,
+.onboarding-modal::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 body {
   background: var(--bg);
   overflow-x: hidden;
