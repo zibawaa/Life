@@ -32,7 +32,10 @@ export function useHorizontalDrag<T extends HTMLElement>() {
     dragging,
     dragProps: {
       onPointerDown: (event: ReactPointerEvent<T>) => {
-        if (event.pointerType === 'mouse' && event.button !== 0) return;
+        // Let touch + pen use the browser's native momentum scrolling on iOS / Android.
+        // The JS drag is only needed for desktop mouse where overflow-x doesn't drag.
+        if (event.pointerType !== 'mouse') return;
+        if (event.button !== 0) return;
         const element = ref.current;
         if (!element) return;
 

@@ -1151,7 +1151,11 @@ select:focus {
   cursor: grab;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  touch-action: pan-y;
+  /* pan-x pan-y lets the browser handle native momentum scrolling on touch.
+     The JS drag hook only kicks in for mouse pointers now. */
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   user-select: none;
 }
 
