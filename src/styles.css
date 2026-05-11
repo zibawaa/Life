@@ -765,8 +765,9 @@ select:focus {
   padding-top: 8px;
 }
 
-.split-mini-list span {
+.split-mini-list button {
   flex: 0 0 auto;
+  border: 0;
   padding: 7px 9px;
   border-radius: 999px;
   background: rgba(112, 128, 73, 0.12);
@@ -775,9 +776,50 @@ select:focus {
   font-size: 0.78rem;
 }
 
-.split-mini-list span.active {
+.split-mini-list button.active {
   background: var(--olive);
   color: #fff8e8;
+}
+
+.split-day-picker {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-top: 8px;
+}
+
+.split-day-picker button {
+  flex: 0 0 auto;
+  min-width: 88px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 244, 219, 0.72);
+  color: var(--olive-dark);
+  padding: 9px 10px;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  font-weight: 900;
+}
+
+.split-day-picker button span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.split-day-picker button.active {
+  background: var(--olive);
+  color: #fff8e8;
+}
+
+.split-day-picker button.active span {
+  color: rgba(255, 248, 232, 0.86);
+}
+
+.settings-split-picker {
+  margin-bottom: 12px;
 }
 
 .split-editor {
@@ -2122,6 +2164,19 @@ select:focus {
 .onboarding-final {
   display: grid;
   gap: 14px;
+}
+
+.onboarding-split-import {
+  display: grid;
+  gap: 10px;
+  border: 1px dashed rgba(79, 95, 49, 0.28);
+  border-radius: 18px;
+  background: rgba(255, 244, 219, 0.48);
+  padding: 12px;
+}
+
+.onboarding-split-import textarea {
+  min-height: 92px;
 }
 
 .onboarding-target-card {

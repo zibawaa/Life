@@ -57,6 +57,7 @@ export interface AppSettings {
   onboardingCompleted: boolean;
   profile: ProfileSettings;
   splitStartDate: string;
+  activeSplitDayIndex: number;
   workoutSplit: WorkoutSplitDay[];
 }
 

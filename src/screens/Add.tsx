@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BarcodeScanner } from '../components/BarcodeScanner';
 import { AreaTabs, Card, Field, areaLabels, parseTags } from '../components/Primitives';
 import { generateId, todayKey } from '../data/defaults';
-import { getActiveSplitDay } from '../data/nutrition';
+import { getSelectedSplitDay } from '../data/nutrition';
 import { parseWorkoutSplitText } from '../data/workoutSplitParser';
 import type {
   AppSettings,
@@ -57,7 +57,7 @@ const toNumber = (value: number | string) => {
 };
 
 function blankForm(type: EntryType, settings: AppSettings): AddFormState {
-  const activeSplit = getActiveSplitDay(settings.workoutSplit, settings.splitStartDate);
+  const activeSplit = getSelectedSplitDay(settings.workoutSplit, settings.activeSplitDayIndex);
   return {
     date: todayKey(),
     title: defaultTitle(type, activeSplit.category),
@@ -275,7 +275,7 @@ export function AddScreen({
     setMessage('');
   }, [activeType, editingEntry, settings]);
 
-  const activeSplit = useMemo(() => getActiveSplitDay(settings.workoutSplit, settings.splitStartDate), [settings]);
+  const activeSplit = useMemo(() => getSelectedSplitDay(settings.workoutSplit, settings.activeSplitDayIndex), [settings]);
 
   const set = <K extends keyof AddFormState>(key: K, value: AddFormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -331,7 +331,7 @@ export function AddScreen({
     }));
   };
 
-  const applySplitDayToForm = (splitDay: ReturnType<typeof getActiveSplitDay>) => {
+  const applySplitDayToForm = (splitDay: ReturnType<typeof getSelectedSplitDay>) => {
     setForm((current) => ({
       ...current,
       title: defaultTitle('gym', splitDay.category),
@@ -352,13 +352,19 @@ export function AddScreen({
   const importWorkoutSplit = async () => {
     try {
       const parsed = parseWorkoutSplitText(splitPaste);
-      await onSaveSettings({ ...settings, workoutSplit: parsed.days });
-      applySplitDayToForm(getActiveSplitDay(parsed.days, settings.splitStartDate));
+      await onSaveSettings({ ...settings, workoutSplit: parsed.days, activeSplitDayIndex: settings.activeSplitDayIndex || 1 });
+      applySplitDayToForm(getSelectedSplitDay(parsed.days, settings.activeSplitDayIndex || 1));
       setSplitPaste('');
       setSplitImportMessage(`Imported ${parsed.days.length} days, ${parsed.exerciseCount} exercises, ${parsed.restDayCount} rest days.`);
     } catch (error) {
       setSplitImportMessage(error instanceof Error ? error.message : 'Could not import that split.');
     }
+  };
+
+  const selectSplitDay = async (dayIndex: number) => {
+    const splitDay = getSelectedSplitDay(settings.workoutSplit, dayIndex);
+    applySplitDayToForm(splitDay);
+    await onSaveSettings({ ...settings, activeSplitDayIndex: dayIndex });
   };
 
   return (
@@ -437,7 +443,22 @@ export function AddScreen({
 
             <div className="split-banner">
               <strong>{activeSplit.label}: {activeSplit.category}</strong>
-              <span>{activeSplit.isRest ? 'Rest day auto-categorised from your split.' : 'Auto-categorised from your split.'}</span>
+              <span>{activeSplit.isRest ? 'Selected rest day from your split.' : 'Selected from your split. Tap another day if you are on a different day.'}</span>
+              <div className="split-day-picker" aria-label="Choose current split day">
+                {settings.workoutSplit.map((day) => (
+                  <button
+                    key={day.dayIndex}
+                    type="button"
+                    className={day.dayIndex === activeSplit.dayIndex ? 'active' : ''}
+                    onClick={() => {
+                      selectSplitDay(day.dayIndex).catch((error) => setSplitImportMessage(error instanceof Error ? error.message : 'Could not select day.'));
+                    }}
+                  >
+                    {day.label}
+                    <span>{day.category}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="form-grid">
               <Field label="Split label">

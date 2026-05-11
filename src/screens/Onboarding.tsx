@@ -2,6 +2,7 @@ import { Check, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, PiggyBank, User
 import { useState } from 'react';
 import { Field } from '../components/Primitives';
 import { calculateTargets } from '../data/nutrition';
+import { parseWorkoutSplitText } from '../data/workoutSplitParser';
 import type { AppSettings, ProfileSettings } from '../types';
 
 const steps = [
@@ -26,7 +27,7 @@ const steps = [
   {
     label: 'Setup',
     title: 'Money and split',
-    body: 'Set your monthly budget and the first day of your workout cycle.',
+    body: 'Set your budget, paste your split, and choose the day you are currently on.',
     icon: WalletCards
   }
 ];
@@ -46,6 +47,8 @@ export function OnboardingScreen({
   const [draft, setDraft] = useState(settings);
   const [stepIndex, setStepIndex] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [splitPaste, setSplitPaste] = useState('');
+  const [splitMessage, setSplitMessage] = useState('');
   const targets = calculateTargets(draft.profile);
   const activeStep = steps[stepIndex];
   const ActiveIcon = activeStep.icon;
@@ -85,7 +88,7 @@ export function OnboardingScreen({
           <div>
             <Dumbbell size={24} />
             <strong>Gym split tracking</strong>
-            <span>Your 7 day split repeats automatically from the start date.</span>
+            <span>Paste your split and choose the day you are currently on.</span>
           </div>
           <div>
             <PiggyBank size={24} />
@@ -170,9 +173,46 @@ export function OnboardingScreen({
               onChange={(event) => updateProfile('monthlyBudget', numericValue(event.target.value, draft.profile.monthlyBudget))}
             />
           </Field>
-          <Field label="Day 1 starts on">
-            <input type="date" value={draft.splitStartDate} onChange={(event) => setDraft((current) => ({ ...current, splitStartDate: event.target.value }))} />
+          <Field label="Current split day">
+            <select
+              value={draft.activeSplitDayIndex}
+              onChange={(event) => setDraft((current) => ({ ...current, activeSplitDayIndex: Number.parseInt(event.target.value, 10) || 1 }))}
+            >
+              {draft.workoutSplit.map((day) => (
+                <option key={day.dayIndex} value={day.dayIndex}>
+                  {day.label}: {day.category}
+                </option>
+              ))}
+            </select>
           </Field>
+        </div>
+
+        <div className="onboarding-split-import">
+          <Field label="Paste split">
+            <textarea
+              value={splitPaste}
+              onChange={(event) => setSplitPaste(event.target.value)}
+              placeholder={'Optional: paste your Day 1-7 split here'}
+            />
+          </Field>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              try {
+                const parsed = parseWorkoutSplitText(splitPaste);
+                setDraft((current) => ({ ...current, workoutSplit: parsed.days, activeSplitDayIndex: current.activeSplitDayIndex || 1 }));
+                setSplitPaste('');
+                setSplitMessage(`Imported ${parsed.days.length} days. Select the day you are on above.`);
+              } catch (error) {
+                setSplitMessage(error instanceof Error ? error.message : 'Could not import that split.');
+              }
+            }}
+            disabled={!splitPaste.trim()}
+          >
+            Import split
+          </button>
+          {splitMessage && <p className="onboarding-note">{splitMessage}</p>}
         </div>
 
         <div className="onboarding-target-card" aria-label="Starting nutrition targets">

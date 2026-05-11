@@ -1,5 +1,5 @@
 import type { AppSettings, AreaKey, DashboardEntry, EntryType, FinanceEntry, Insight, LocalFood, WeightLog } from '../types';
-import { getActiveSplitDay } from '../data/nutrition';
+import { getSelectedSplitDay } from '../data/nutrition';
 import { FoodCalorieScreen } from './FoodCalorie';
 import {
   AreaTabs,
@@ -93,7 +93,7 @@ export function AreasScreen({
 
   const areaEntries = entries.filter((entry) => entry.type === selectedArea);
   const areaInsights = insights.filter((insight) => insight.area === selectedArea || insight.area === 'all');
-  const activeSplit = getActiveSplitDay(settings.workoutSplit, settings.splitStartDate);
+  const activeSplit = getSelectedSplitDay(settings.workoutSplit, settings.activeSplitDayIndex);
   const financeSpend = entries
     .filter((entry): entry is FinanceEntry => entry.type === 'finance' && entry.direction === 'expense')
     .reduce((sum, entry) => sum + entry.amount, 0);
@@ -128,12 +128,19 @@ export function AreasScreen({
           {selectedArea === 'gym' && (
             <div className="split-status">
               <strong>{activeSplit.label}: {activeSplit.category}</strong>
-              <span>{activeSplit.isRest ? 'Rest day from split' : `${activeSplit.exercises.length} planned exercises`}</span>
+              <span>{activeSplit.isRest ? 'Selected rest day' : `${activeSplit.exercises.length} planned exercises`}</span>
               <div className="split-mini-list">
                 {settings.workoutSplit.map((day) => (
-                  <span key={day.dayIndex} className={day.dayIndex === activeSplit.dayIndex ? 'active' : ''}>
+                  <button
+                    key={day.dayIndex}
+                    type="button"
+                    className={day.dayIndex === activeSplit.dayIndex ? 'active' : ''}
+                    onClick={() => {
+                      onSaveSettings({ ...settings, activeSplitDayIndex: day.dayIndex }).catch(console.error);
+                    }}
+                  >
                     {day.label}: {day.category}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>

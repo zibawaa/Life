@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight, Dumbbell, Filter, HeartPulse, Plus, Smile, Soup, Target, WalletCards } from 'lucide-react';
 import type { AppSettings, DashboardEntry, EntryType, FoodEntry, GoalEntry, HealthEntry, Insight, MoodEntry, FinanceEntry } from '../types';
 import { todayKey } from '../data/defaults';
-import { calculateTargets, getActiveSplitDay } from '../data/nutrition';
+import { calculateTargets, getSelectedSplitDay } from '../data/nutrition';
 import { Card, EmptyState, areaLabels, entrySummary, formatEntryDate } from '../components/Primitives';
 
 const currency = (value: number) => `GBP ${value.toFixed(2)}`;
@@ -24,7 +24,7 @@ export function HomeScreen({
   const today = todayKey();
   const todayEntries = entries.filter((entry) => entry.date === today);
   const targets = calculateTargets(settings.profile);
-  const activeSplit = getActiveSplitDay(settings.workoutSplit, settings.splitStartDate);
+  const activeSplit = getSelectedSplitDay(settings.workoutSplit, settings.activeSplitDayIndex);
   const todaysMood = todayEntries.find((entry): entry is MoodEntry => entry.type === 'mood');
   const healthCount = todayEntries.filter((entry): entry is HealthEntry => entry.type === 'health').length;
   const todayFood = todayEntries.filter((entry): entry is FoodEntry => entry.type === 'food').reduce((sum, entry) => sum + entry.calories, 0);
@@ -204,4 +204,3 @@ function calculateDayScore(mood: number, healthCount: number, calories: number, 
   const budgetScore = spend <= monthlyBudget / 30 ? 10 : 4;
   return Math.max(0, Math.min(99, Math.round(moodScore + healthScore + foodScore + budgetScore)));
 }
-

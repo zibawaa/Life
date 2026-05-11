@@ -93,7 +93,7 @@ export function SettingsScreen({
   const importWorkoutSplit = () => {
     try {
       const parsed = parseWorkoutSplitText(splitPaste);
-      setDraft((current) => ({ ...current, workoutSplit: parsed.days }));
+      setDraft((current) => ({ ...current, workoutSplit: parsed.days, activeSplitDayIndex: current.activeSplitDayIndex || 1 }));
       setSplitPaste('');
       setMessage(`Split parsed into ${parsed.days.length} days, ${parsed.exerciseCount} exercises, and ${parsed.restDayCount} rest days. Review it, then save settings.`);
     } catch (error) {
@@ -157,9 +157,36 @@ export function SettingsScreen({
       </Card>
 
       <Card title="Workout split">
-        <Field label="Split start date" hint="This date defines Day 1 of the repeating seven-day cycle.">
-          <input type="date" value={draft.splitStartDate} onChange={(event) => setDraft((current) => ({ ...current, splitStartDate: event.target.value }))} />
-        </Field>
+        <div className="form-grid two">
+          <Field label="Current split day" hint="This is the day the dashboard and gym log will use.">
+            <select
+              value={draft.activeSplitDayIndex}
+              onChange={(event) => setDraft((current) => ({ ...current, activeSplitDayIndex: Number.parseInt(event.target.value, 10) || 1 }))}
+            >
+              {draft.workoutSplit.map((day) => (
+                <option key={day.dayIndex} value={day.dayIndex}>
+                  {day.label}: {day.category}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Split start date" hint="Kept for reference. Current day is selected manually above.">
+            <input type="date" value={draft.splitStartDate} onChange={(event) => setDraft((current) => ({ ...current, splitStartDate: event.target.value }))} />
+          </Field>
+        </div>
+        <div className="split-day-picker settings-split-picker" aria-label="Choose current split day">
+          {draft.workoutSplit.map((day) => (
+            <button
+              key={day.dayIndex}
+              type="button"
+              className={day.dayIndex === draft.activeSplitDayIndex ? 'active' : ''}
+              onClick={() => setDraft((current) => ({ ...current, activeSplitDayIndex: day.dayIndex }))}
+            >
+              {day.label}
+              <span>{day.category}</span>
+            </button>
+          ))}
+        </div>
         <div className="split-import-panel">
           <div className="editor-head">
             <h3>Paste full split</h3>

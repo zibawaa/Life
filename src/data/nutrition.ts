@@ -5,6 +5,14 @@ export function calculateTargets(profile: ProfileSettings): MacroTargets {
   return calculateFoodTargets(profile);
 }
 
+export function getSelectedSplitDay(split: WorkoutSplitDay[], activeSplitDayIndex = 1): WorkoutSplitDay {
+  if (split.length === 0) {
+    throw new Error('Workout split must include at least one day');
+  }
+
+  return split.find((day) => day.dayIndex === activeSplitDayIndex) ?? split[0];
+}
+
 export function getActiveSplitDay(split: WorkoutSplitDay[], splitStartDate: string, date = new Date()): WorkoutSplitDay {
   if (split.length === 0) {
     throw new Error('Workout split must include at least one day');

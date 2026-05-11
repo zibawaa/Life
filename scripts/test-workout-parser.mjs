@@ -141,6 +141,7 @@ Full rest.`;
 
 const tmpDir = resolve('.tmp-workout-parser');
 const outfile = resolve(tmpDir, 'workoutSplitParser.test.mjs');
+const nutritionOutfile = resolve(tmpDir, 'nutrition.test.mjs');
 
 try {
   await mkdir(tmpDir, { recursive: true });
@@ -197,6 +198,21 @@ try {
   assert.equal(day6.exercises[0].name, 'Hack Squat');
   assert.equal(day6.exercises[0].targetSets, 3);
   assert.equal(day6.exercises[0].targetReps, '6-8');
+
+  await build({
+    entryPoints: ['src/data/nutrition.ts'],
+    outfile: nutritionOutfile,
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    sourcemap: false,
+    logLevel: 'silent'
+  });
+
+  const { getSelectedSplitDay } = await import(`${pathToFileURL(nutritionOutfile).href}?t=${Date.now()}`);
+  assert.equal(getSelectedSplitDay(result.days, 6).category, 'Lower B');
+  assert.equal(getSelectedSplitDay(result.days, 4).isRest, true);
+  assert.equal(getSelectedSplitDay(result.days, 99).category, 'Upper A');
 } finally {
   await rm(tmpDir, { recursive: true, force: true });
 }

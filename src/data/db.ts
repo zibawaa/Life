@@ -38,6 +38,7 @@ export async function getSettings(): Promise<AppSettings> {
       ...defaultSettings(),
       ...existing.value,
       profile: { ...defaultSettings().profile, ...existing.value.profile },
+      activeSplitDayIndex: existing.value.activeSplitDayIndex || defaultSettings().activeSplitDayIndex,
       workoutSplit: existing.value.workoutSplit?.length ? existing.value.workoutSplit : defaultSettings().workoutSplit
     };
   }

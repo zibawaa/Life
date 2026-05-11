@@ -96,5 +96,6 @@ export const defaultSettings = (): AppSettings => ({
   onboardingCompleted: false,
   profile: defaultProfile,
   splitStartDate: todayKey(),
+  activeSplitDayIndex: 1,
   workoutSplit: defaultWorkoutSplit()
 });
