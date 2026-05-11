@@ -6,6 +6,7 @@ import {
   Heart,
   Plus,
   Save,
+  ScanBarcode,
   Search,
   Soup,
   Star,
@@ -13,7 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { BarcodeScanner } from '../components/BarcodeScanner';
+import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 import { Card, EmptyState, Field } from '../components/Primitives';
 import { generateId, todayKey } from '../data/defaults';
 import {
@@ -96,6 +97,7 @@ export function FoodCalorieScreen({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [addTab, setAddTab] = useState<'search' | 'barcode' | 'quick' | 'recipe'>('search');
   const [mealSlot, setMealSlot] = useState<MealSlot>('breakfast');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [message, setMessage] = useState('');
   const foodEntries = entries.filter(foodEntry);
   const dayEntries = foodEntries.filter((entry) => entry.date === selectedDate);
@@ -232,8 +234,20 @@ export function FoodCalorieScreen({
           onClose={() => setDrawerOpen(false)}
           onSaveEntry={onSaveEntry}
           onSaveLocalFood={onSaveLocalFood}
+          onOpenScanner={() => {
+            setDrawerOpen(false);
+            setScannerOpen(true);
+          }}
         />
       )}
+
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onLog={onSaveEntry}
+        onSaveLocalFood={onSaveLocalFood}
+        defaultDate={selectedDate}
+      />
     </div>
   );
 }
@@ -291,7 +305,8 @@ function FoodAddDrawer({
   foods,
   onClose,
   onSaveEntry,
-  onSaveLocalFood
+  onSaveLocalFood,
+  onOpenScanner
 }: {
   activeTab: 'search' | 'barcode' | 'quick' | 'recipe';
   onTabChange: (tab: 'search' | 'barcode' | 'quick' | 'recipe') => void;
@@ -302,6 +317,7 @@ function FoodAddDrawer({
   onClose: () => void;
   onSaveEntry: (entry: DashboardEntry) => Promise<void>;
   onSaveLocalFood: (food: LocalFood) => Promise<void>;
+  onOpenScanner: () => void;
 }) {
   const [query, setQuery] = useState('');
   const [onlineFoods, setOnlineFoods] = useState<LocalFood[]>([]);
@@ -544,15 +560,14 @@ function FoodAddDrawer({
 
         {activeTab === 'barcode' && (
           <div className="food-drawer-panel">
-            <BarcodeScanner
-              onProduct={(product) => {
-                const food = productToLocalFood(product);
-                void onSaveLocalFood(food);
-                setSelectedFood(food);
-                setAddTabSafe(onTabChange, 'search');
-              }}
-            />
-            {selectedFood && <p className="form-message">Scanned {selectedFood.name}. Open Search tab to choose serving and log it.</p>}
+            <div className="scan-launch-card">
+              <ScanBarcode size={42} />
+              <h4>Open camera scanner</h4>
+              <p>Full-screen view with a barcode viewfinder. Detects EAN-13 and UPC, fetches macros, and logs to your chosen meal slot.</p>
+              <button type="button" className="primary-button" onClick={onOpenScanner}>
+                <ScanBarcode size={18} /> Tap to scan
+              </button>
+            </div>
           </div>
         )}
 

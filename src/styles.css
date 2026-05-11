@@ -2940,6 +2940,347 @@ select:focus {
   color: var(--muted);
 }
 
+/* Fullscreen barcode scanner */
+.scanner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: #000;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.scanner-video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.scanner-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.scanner-viewfinder {
+  position: relative;
+  width: min(78vw, 360px);
+  aspect-ratio: 16 / 10;
+  border-radius: 22px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62);
+}
+
+.scanner-viewfinder.brightness-dark {
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.78);
+}
+
+.scanner-viewfinder.brightness-bright {
+  box-shadow: 0 0 0 9999px rgba(255, 248, 232, 0.18);
+}
+
+.scanner-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #c6d792;
+  border-radius: 8px;
+}
+
+.scanner-corner.tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-top-left-radius: 22px; }
+.scanner-corner.tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-top-right-radius: 22px; }
+.scanner-corner.bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-bottom-left-radius: 22px; }
+.scanner-corner.br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-bottom-right-radius: 22px; }
+
+.scanner-scanline {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(198, 215, 146, 0.95), transparent);
+  box-shadow: 0 0 14px rgba(198, 215, 146, 0.6);
+  transform: translateY(-1px);
+  animation: scanline 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-46px); }
+  100% { transform: translateY(44px); }
+}
+
+.scanner-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: max(14px, env(safe-area-inset-top)) 16px 12px;
+}
+
+.scanner-close {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.scanner-spacer {
+  width: 42px;
+}
+
+.scanner-status.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(20, 22, 14, 0.7);
+  color: #ece1c8;
+  font-weight: 800;
+  font-size: 0.85rem;
+  backdrop-filter: blur(8px);
+}
+
+.scanner-status.brightness-dark {
+  background: rgba(160, 60, 32, 0.85);
+  color: #fff8e8;
+}
+
+.scanner-status.brightness-bright {
+  background: rgba(190, 150, 32, 0.85);
+  color: #1a1a14;
+}
+
+.scanner-result {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: grid;
+  gap: 14px;
+  padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(20, 22, 14, 0) 0%, rgba(20, 22, 14, 0.92) 28%, rgba(20, 22, 14, 0.98) 100%);
+  color: #ece1c8;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+.scanner-result-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 8px;
+}
+
+.scanner-result-head h3 {
+  margin: 0;
+  color: #fff8e8;
+  font-size: 1.4rem;
+  line-height: 1.15;
+}
+
+.scanner-result-head span {
+  color: #b5ac90;
+  font-size: 0.9rem;
+  grid-column: 1;
+}
+
+.scanner-result-head .scanner-close {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.scanner-macro-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.scanner-macro {
+  background: rgba(155, 176, 95, 0.16);
+  border: 1px solid rgba(155, 176, 95, 0.32);
+  border-radius: 14px;
+  padding: 10px 6px;
+  text-align: center;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+}
+
+.scanner-macro strong {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #fff8e8;
+}
+
+.scanner-macro em {
+  font-style: normal;
+  color: #b5ac90;
+  font-size: 0.78rem;
+}
+
+.scanner-macro span {
+  color: #c6d792;
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+
+.scanner-serving {
+  display: grid;
+  gap: 6px;
+}
+
+.scanner-serving > label {
+  display: grid;
+  gap: 6px;
+  color: #c6d792;
+  font-weight: 850;
+  font-size: 0.85rem;
+}
+
+.scanner-serving-input {
+  display: grid;
+  grid-template-columns: 46px 1fr 36px 46px;
+  align-items: center;
+  gap: 6px;
+}
+
+.scanner-serving-input button {
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(155, 176, 95, 0.32);
+  background: rgba(155, 176, 95, 0.18);
+  color: #fff8e8;
+  font-size: 1.3rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.scanner-serving-input input {
+  min-height: 46px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(155, 176, 95, 0.32);
+  border-radius: 14px;
+  color: #fff8e8;
+}
+
+.scanner-unit {
+  color: #b5ac90;
+  text-align: left;
+  font-weight: 800;
+}
+
+.scanner-per100 {
+  margin: 0;
+  color: #9c9477;
+  font-size: 0.78rem;
+}
+
+.scanner-mealslot {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.scanner-mealslot button {
+  min-height: 44px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(155, 176, 95, 0.32);
+  background: rgba(255, 255, 255, 0.04);
+  color: #c6d792;
+  font-weight: 850;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.scanner-mealslot button.active {
+  background: #9bb05f;
+  color: #15170e;
+  border-color: #9bb05f;
+}
+
+.scanner-actions {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+}
+
+.scanner-actions .secondary-button {
+  background: rgba(255, 255, 255, 0.06);
+  color: #c6d792;
+  border: 1px solid rgba(155, 176, 95, 0.32);
+}
+
+.scanner-actions .primary-button {
+  background: #9bb05f;
+  color: #15170e;
+}
+
+/* Scan launch button (inline on Add screen + drawer barcode tab) */
+.scan-launch {
+  width: 100%;
+  min-height: 56px;
+}
+
+.scan-launch-hint {
+  margin: 6px 2px 14px;
+  font-size: 0.85rem;
+}
+
+.scan-launch-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 22px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 22px;
+  background: rgba(112, 128, 73, 0.06);
+  text-align: center;
+}
+
+.scan-launch-card svg {
+  color: var(--olive);
+}
+
+.scan-launch-card h4 {
+  margin: 4px 0 0;
+  color: var(--olive-dark);
+  font-size: 1.1rem;
+}
+
+.scan-launch-card p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 340px;
+  line-height: 1.4;
+}
+
+@media (max-width: 380px) {
+  .scanner-macro strong { font-size: 1.15rem; }
+  .scanner-mealslot button { font-size: 0.78rem; }
+}
+
 :root[data-theme='dark'] .weight-chart svg {
   background:
     linear-gradient(rgba(155, 176, 95, 0.12) 1px, transparent 1px) 0 0 / 100% 25%,

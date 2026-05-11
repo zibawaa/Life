@@ -1,6 +1,6 @@
-import { Save } from 'lucide-react';
+import { ScanBarcode, Save } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { BarcodeScanner } from '../components/BarcodeScanner';
+import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 import { AreaTabs, Card, Field, areaLabels, parseTags } from '../components/Primitives';
 import { generateId, todayKey } from '../data/defaults';
 import { getSelectedSplitDay } from '../data/nutrition';
@@ -11,8 +11,7 @@ import type {
   DashboardEntry,
   EntryType,
   LocalFood,
-  LoggedExerciseSet,
-  ProductLookupResult
+  LoggedExerciseSet
 } from '../types';
 
 interface AddFormState {
@@ -269,6 +268,7 @@ export function AddScreen({
   const [message, setMessage] = useState('');
   const [splitPaste, setSplitPaste] = useState('');
   const [splitImportMessage, setSplitImportMessage] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   useEffect(() => {
     setForm(editingEntry ? entryToForm(editingEntry, settings) : blankForm(activeType, settings));
@@ -298,20 +298,6 @@ export function AddScreen({
         savedAt: new Date().toISOString()
       });
     }
-  };
-
-  const applyProduct = (product: ProductLookupResult) => {
-    setForm((current) => ({
-      ...current,
-      title: product.name,
-      meal: product.name,
-      calories: product.calories,
-      protein: product.protein,
-      carbs: product.carbs,
-      fat: product.fat,
-      barcode: product.barcode,
-      source: 'barcode'
-    }));
   };
 
   const updateExercise = (id: string, patch: Partial<LoggedExerciseSet>) => {
@@ -369,6 +355,13 @@ export function AddScreen({
 
   return (
     <div className="screen-stack">
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onLog={onSave}
+        onSaveLocalFood={onSaveLocalFood}
+        defaultDate={form.date || todayKey()}
+      />
       <section className="page-title">
         <h2>{editingEntry ? `Edit ${areaLabels[activeType]}` : 'Add log'}</h2>
         <p>Quickly log anything. It will appear in the timeline and the matching area tab.</p>
@@ -493,7 +486,10 @@ export function AddScreen({
 
         {activeType === 'food' && (
           <>
-            <BarcodeScanner onProduct={applyProduct} />
+            <button type="button" className="primary-button scan-launch" onClick={() => setScannerOpen(true)}>
+              <ScanBarcode size={18} /> Scan barcode
+            </button>
+            <p className="card-copy scan-launch-hint">Opens a full-screen scanner. Detected products are logged with meal slot and macros.</p>
             <div className="form-grid">
               <Field label="Food or meal">
                 <input value={form.meal} onChange={(event) => set('meal', event.target.value)} />
