@@ -1,4 +1,4 @@
-import { Camera, Keyboard, Search, X } from 'lucide-react';
+import { Camera, Keyboard, ScanBarcode, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { ProductLookupResult } from '../types';
 import { lookupOpenFoodFactsProduct } from '../data/openFoodFacts';
@@ -21,7 +21,7 @@ export function BarcodeScanner({ onProduct }: { onProduct: (product: ProductLook
 
   const lookup = async (barcode: string) => {
     setLookupBusy(true);
-    setStatus('Looking up product...');
+    setStatus('Reading product details...');
     try {
       const product = await lookupOpenFoodFactsProduct(barcode);
       onProduct(product);
@@ -90,22 +90,32 @@ export function BarcodeScanner({ onProduct }: { onProduct: (product: ProductLook
 
   return (
     <div className="barcode-box">
-      <div className="barcode-actions">
-        <button type="button" className="secondary-button" onClick={scanning ? stopCamera : startCamera}>
-          {scanning ? <X size={16} /> : <Camera size={16} />}
-          {scanning ? 'Stop camera' : 'Scan barcode'}
-        </button>
+      <div className={`camera-stage ${scanning ? 'active' : ''}`}>
+        {scanning ? (
+          <video ref={videoRef} className="scanner-video" muted playsInline />
+        ) : (
+          <div className="camera-placeholder">
+            <ScanBarcode size={36} />
+            <strong>Camera scanner</strong>
+            <span>Use your phone camera to scan the product barcode.</span>
+          </div>
+        )}
       </div>
 
-      {scanning && <video ref={videoRef} className="scanner-video" muted playsInline />}
+      <div className="barcode-actions">
+        <button type="button" className="primary-button" onClick={scanning ? stopCamera : startCamera}>
+          {scanning ? <X size={16} /> : <Camera size={16} />}
+          {scanning ? 'Stop camera' : 'Open camera'}
+        </button>
+      </div>
 
       <div className="manual-barcode">
         <Field label="Barcode number">
           <input value={manualBarcode} onChange={(event) => setManualBarcode(event.target.value)} inputMode="numeric" placeholder="Enter barcode manually" />
         </Field>
         <button type="button" className="secondary-button" onClick={() => lookup(manualBarcode)} disabled={lookupBusy || !manualBarcode.trim()}>
-          {manualBarcode.trim() ? <Search size={16} /> : <Keyboard size={16} />}
-          Lookup
+          <Keyboard size={16} />
+          Use code
         </button>
       </div>
 
@@ -113,4 +123,3 @@ export function BarcodeScanner({ onProduct }: { onProduct: (product: ProductLook
     </div>
   );
 }
-

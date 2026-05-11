@@ -26,7 +26,14 @@ export const db = new LifeDashboardDatabase();
 
 export async function getSettings(): Promise<AppSettings> {
   const existing = await db.settings.get('app');
-  if (existing?.value) return existing.value;
+  if (existing?.value) {
+    return {
+      ...defaultSettings(),
+      ...existing.value,
+      profile: { ...defaultSettings().profile, ...existing.value.profile },
+      workoutSplit: existing.value.workoutSplit?.length ? existing.value.workoutSplit : defaultSettings().workoutSplit
+    };
+  }
 
   const settings = defaultSettings();
   await db.settings.put({ key: 'app', value: settings });
@@ -91,4 +98,3 @@ export async function resetDashboardData() {
     await db.settings.put({ key: 'app', value: defaultSettings() });
   });
 }
-

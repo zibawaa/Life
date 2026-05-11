@@ -4,6 +4,9 @@ dist/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+dev-server.log
+dev-server.err.log
+.dev-server.pid
 .env
 .env.*
 !.env.example

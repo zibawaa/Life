@@ -5,6 +5,7 @@ import { AddScreen } from './screens/Add';
 import { AreasScreen } from './screens/Areas';
 import { HomeScreen } from './screens/Home';
 import { InsightsScreen } from './screens/Insights';
+import { OnboardingScreen } from './screens/Onboarding';
 import { SettingsScreen } from './screens/Settings';
 import type { AreaKey, DashboardEntry, EntryType, Screen } from './types';
 import { useState } from 'react';
@@ -49,8 +50,19 @@ export default function App() {
     setScreen('home');
   };
 
+  if (!dashboard.settings.onboardingCompleted) {
+    return <OnboardingScreen settings={dashboard.settings} onComplete={dashboard.updateSettings} />;
+  }
+
   return (
-    <AppShell screen={screen} onNavigate={navigate}>
+    <AppShell
+      screen={screen}
+      onNavigate={navigate}
+      onAreaShortcut={(area) => {
+        setSelectedArea(area);
+        setScreen('areas');
+      }}
+    >
       {screen === 'home' && (
         <HomeScreen
           entries={dashboard.entries}

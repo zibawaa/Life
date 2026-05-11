@@ -46,6 +46,7 @@ export interface WorkoutSplitDay {
 }
 
 export interface AppSettings {
+  onboardingCompleted: boolean;
   profile: ProfileSettings;
   splitStartDate: string;
   workoutSplit: WorkoutSplitDay[];
@@ -175,4 +176,3 @@ export interface DashboardExport {
   entries: DashboardEntry[];
   localFoods: LocalFood[];
 }
-

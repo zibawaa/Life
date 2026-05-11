@@ -89,8 +89,8 @@ export const defaultWorkoutSplit = (): WorkoutSplitDay[] => [
 ];
 
 export const defaultSettings = (): AppSettings => ({
+  onboardingCompleted: false,
   profile: defaultProfile,
   splitStartDate: todayKey(),
   workoutSplit: defaultWorkoutSplit()
 });
-
