@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Dumbbell, Filter, HeartPulse, Plus, Smile, Soup, Target, WalletCards } from 'lucide-react';
+import { ChevronDown, ChevronRight, Dumbbell, Filter, HeartPulse, PawPrint, Plus, Smile, Soup, Target, WalletCards } from 'lucide-react';
 import type { AppSettings, DashboardEntry, EntryType, FoodEntry, GoalEntry, HealthEntry, Insight, MoodEntry, FinanceEntry } from '../types';
 import { todayKey } from '../data/defaults';
 import { calculateTargets, getSelectedSplitDay } from '../data/nutrition';
@@ -57,7 +57,7 @@ export function HomeScreen({
               <strong>{dayScore}%</strong>
               <span>Day Score</span>
             </div>
-            <div className="score-paws" aria-hidden="true" />
+            <PawPrint className="score-paws" size={72} aria-hidden="true" />
             <button type="button" className="primary-button details-button" onClick={() => onAdd('mood')}>
               View Today Details
               <ChevronRight size={18} />
@@ -114,7 +114,7 @@ export function HomeScreen({
       <button type="button" className="floating-quick-add" onClick={() => onAdd('mood')}>
         <span><Plus size={26} /></span>
         Quick add
-        <i aria-hidden="true" />
+        <PawPrint size={26} aria-hidden="true" />
       </button>
 
       <div className="sr-only">

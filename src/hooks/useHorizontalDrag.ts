@@ -15,7 +15,9 @@ export function useHorizontalDrag<T extends HTMLElement>() {
     const element = ref.current;
     if (element && state.current.pointerId === event.pointerId) {
       try {
-        element.releasePointerCapture(event.pointerId);
+        if (element.hasPointerCapture(event.pointerId)) {
+          element.releasePointerCapture(event.pointerId);
+        }
       } catch {
         // Pointer capture may already be released by the browser.
       }
@@ -41,16 +43,24 @@ export function useHorizontalDrag<T extends HTMLElement>() {
           startX: event.clientX,
           scrollLeft: element.scrollLeft
         };
-        element.setPointerCapture(event.pointerId);
-        setDragging(true);
       },
       onPointerMove: (event: ReactPointerEvent<T>) => {
         const element = ref.current;
         if (!element || !state.current.active) return;
 
         const deltaX = event.clientX - state.current.startX;
-        if (Math.abs(deltaX) > 4) state.current.moved = true;
-        element.scrollLeft = state.current.scrollLeft - deltaX;
+        if (!state.current.moved && Math.abs(deltaX) > 6) {
+          state.current.moved = true;
+          try {
+            element.setPointerCapture(state.current.pointerId);
+            setDragging(true);
+          } catch {
+            // Some browsers throw if the pointer is no longer active.
+          }
+        }
+        if (state.current.moved) {
+          element.scrollLeft = state.current.scrollLeft - deltaX;
+        }
       },
       onPointerUp: stop,
       onPointerCancel: stop,

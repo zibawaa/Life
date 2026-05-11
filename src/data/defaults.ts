@@ -97,5 +97,6 @@ export const defaultSettings = (): AppSettings => ({
   profile: defaultProfile,
   splitStartDate: todayKey(),
   activeSplitDayIndex: 1,
-  workoutSplit: defaultWorkoutSplit()
+  workoutSplit: defaultWorkoutSplit(),
+  theme: 'system'
 });

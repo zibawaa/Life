@@ -1,3 +1,5 @@
+import { Dumbbell, HeartPulse, PawPrint, Smile, Soup, Target, Trophy, WalletCards } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { AreaKey, DashboardEntry, EntryType, Insight } from '../types';
 import { useHorizontalDrag } from '../hooks/useHorizontalDrag';
 
@@ -9,6 +11,16 @@ export const areaLabels: Record<AreaKey, string> = {
   finance: 'Finances',
   goal: 'Goals',
   bucket: 'Bucket List'
+};
+
+export const areaIcons: Record<AreaKey, LucideIcon> = {
+  mood: Smile,
+  health: HeartPulse,
+  gym: Dumbbell,
+  food: Soup,
+  finance: WalletCards,
+  goal: Target,
+  bucket: Trophy
 };
 
 export const areaDescriptions: Record<AreaKey, string> = {
@@ -48,7 +60,7 @@ export function Card({
 export function EmptyState({ title, body }: { title: string; body: string }) {
   return (
     <div className="empty-state">
-      <div className="paw-mark" aria-hidden="true" />
+      <PawPrint className="paw-mark" size={44} aria-hidden="true" />
       <h3>{title}</h3>
       <p>{body}</p>
     </div>
@@ -74,18 +86,22 @@ export function AreaTabs({
       ref={tabDrag.ref}
       {...tabDrag.dragProps}
     >
-      {(Object.keys(areaLabels) as AreaKey[]).map((key) => (
-        <button
-          key={key}
-          type="button"
-          className={value === key ? 'active' : ''}
-          onClick={() => onChange(key)}
-          role="tab"
-          aria-selected={value === key}
-        >
-          <span>{areaLabels[key]}</span>
-        </button>
-      ))}
+      {(Object.keys(areaLabels) as AreaKey[]).map((key) => {
+        const Icon = areaIcons[key];
+        return (
+          <button
+            key={key}
+            type="button"
+            className={value === key ? 'active' : ''}
+            onClick={() => onChange(key)}
+            role="tab"
+            aria-selected={value === key}
+          >
+            <Icon size={16} aria-hidden="true" />
+            <span>{areaLabels[key]}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

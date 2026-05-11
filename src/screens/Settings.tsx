@@ -1,10 +1,10 @@
-import { Download, RotateCcw, Save, Upload } from 'lucide-react';
+import { Download, Monitor, Moon, RotateCcw, Save, Sun, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, Field } from '../components/Primitives';
 import { calculateTargets } from '../data/nutrition';
 import { generateId } from '../data/defaults';
 import { parseWorkoutSplitText } from '../data/workoutSplitParser';
-import type { AppSettings, DashboardExport, PlannedExercise, ProfileSettings, WorkoutSplitDay } from '../types';
+import type { AppSettings, DashboardExport, PlannedExercise, ProfileSettings, ThemePreference, WorkoutSplitDay } from '../types';
 
 const serializeExercises = (exercises: PlannedExercise[]) =>
   exercises.map((exercise) => `${exercise.name} | ${exercise.targetSets} | ${exercise.targetReps} | ${exercise.targetWeightKg}`).join('\n');
@@ -107,6 +107,29 @@ export function SettingsScreen({
         <h2>Settings</h2>
         <p>Profile, food targets, workout split, and local data backup controls.</p>
       </section>
+
+      <Card title="Appearance">
+        <p className="card-copy">Choose how the dashboard looks. System follows your device setting.</p>
+        <div className="theme-picker" role="radiogroup" aria-label="Theme">
+          {([
+            { value: 'system', label: 'System', icon: Monitor },
+            { value: 'light', label: 'Light', icon: Sun },
+            { value: 'dark', label: 'Dark', icon: Moon }
+          ] as Array<{ value: ThemePreference; label: string; icon: typeof Sun }>).map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={draft.theme === value}
+              className={draft.theme === value ? 'active' : ''}
+              onClick={() => setDraft((current) => ({ ...current, theme: value }))}
+            >
+              <Icon size={18} aria-hidden="true" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+      </Card>
 
       <Card title="Profile and food targets">
         <div className="form-grid">

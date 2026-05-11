@@ -7,8 +7,18 @@ import { HomeScreen } from './screens/Home';
 import { InsightsScreen } from './screens/Insights';
 import { OnboardingScreen } from './screens/Onboarding';
 import { SettingsScreen } from './screens/Settings';
-import type { AreaKey, DashboardEntry, EntryType, Screen } from './types';
-import { useState } from 'react';
+import type { AreaKey, DashboardEntry, EntryType, Screen, ThemePreference } from './types';
+import { useEffect, useState } from 'react';
+
+const resolveTheme = (preference: ThemePreference): 'light' | 'dark' => {
+  if (preference === 'system') {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  }
+  return preference;
+};
 
 export default function App() {
   const dashboard = useDashboardData();
@@ -16,6 +26,21 @@ export default function App() {
   const [selectedArea, setSelectedArea] = useState<AreaKey>('mood');
   const [activeEntryType, setActiveEntryType] = useState<EntryType>('mood');
   const [editingEntry, setEditingEntry] = useState<DashboardEntry | null>(null);
+
+  const themePreference = dashboard.settings?.theme ?? 'system';
+
+  useEffect(() => {
+    const apply = () => {
+      const resolved = resolveTheme(themePreference);
+      document.documentElement.dataset.theme = resolved;
+      document.documentElement.style.colorScheme = resolved;
+    };
+    apply();
+    if (themePreference !== 'system' || typeof window === 'undefined') return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    media.addEventListener('change', apply);
+    return () => media.removeEventListener('change', apply);
+  }, [themePreference]);
 
   const startAdd = (type: EntryType) => {
     setEditingEntry(null);
@@ -60,6 +85,12 @@ export default function App() {
           setScreen('areas');
         }}
         dimmed={!dashboard.settings.onboardingCompleted}
+        themePreference={themePreference}
+        resolvedTheme={resolveTheme(themePreference)}
+        onCycleTheme={() => {
+          const next: ThemePreference = themePreference === 'light' ? 'dark' : themePreference === 'dark' ? 'system' : 'light';
+          dashboard.updateSettings({ ...dashboard.settings!, theme: next });
+        }}
       >
         {screen === 'home' && (
           <HomeScreen

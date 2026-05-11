@@ -13,10 +13,35 @@
   --olive: #708049;
   --olive-dark: #4f5f31;
   --ink: #34372b;
+  --on-olive: var(--on-olive);
   --muted: #746b52;
   --line: rgba(79, 95, 49, 0.18);
+  --line-strong: rgba(79, 95, 49, 0.28);
   --coral: #d9794d;
+  --focus-ring: rgba(112, 128, 73, 0.32);
   --shadow: 0 18px 42px rgba(78, 63, 36, 0.14);
+  --shadow-soft: 0 6px 18px rgba(70, 56, 31, 0.08);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  background: #16170f;
+  color: #ece1c8;
+  --bg: #16170f;
+  --surface: #21241a;
+  --surface-strong: #2b2f22;
+  --paper: #1d1f17;
+  --olive: #9bb05f;
+  --olive-dark: #c6d792;
+  --ink: #ece1c8;
+  --on-olive: #15170e;
+  --muted: #a39c83;
+  --line: rgba(198, 215, 146, 0.16);
+  --line-strong: rgba(198, 215, 146, 0.28);
+  --coral: #ec8a59;
+  --focus-ring: rgba(155, 176, 95, 0.38);
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -143,14 +168,12 @@ button {
 .app-shell::after {
   content: '';
   position: fixed;
-  width: 116px;
-  height: 82px;
-  background:
-    radial-gradient(ellipse at 20% 45%, rgba(112, 128, 73, 0.13) 0 12px, transparent 13px),
-    radial-gradient(ellipse at 45% 24%, rgba(112, 128, 73, 0.13) 0 11px, transparent 12px),
-    radial-gradient(ellipse at 68% 45%, rgba(112, 128, 73, 0.13) 0 12px, transparent 13px),
-    radial-gradient(ellipse at 45% 70%, rgba(112, 128, 73, 0.13) 0 19px, transparent 20px);
-  opacity: 0.8;
+  width: 110px;
+  height: 110px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23708049' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='4' r='2'/><circle cx='18' cy='8' r='2'/><circle cx='20' cy='16' r='2'/><path d='M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.4 2.5 15.35 2.5 13a2.5 2.5 0 0 1 5 0V12a5 5 0 0 1 1.5-3.5z'/></svg>");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.18;
   pointer-events: none;
   z-index: -1;
 }
@@ -246,15 +269,11 @@ button {
 .mini-paws {
   position: absolute;
   left: 3px;
-  top: 8px;
-  width: 45px;
-  height: 30px;
-  opacity: 0.25;
-  background:
-    radial-gradient(ellipse at 15% 55%, var(--olive) 0 4px, transparent 5px),
-    radial-gradient(ellipse at 35% 34%, var(--olive) 0 4px, transparent 5px),
-    radial-gradient(ellipse at 55% 35%, var(--olive) 0 4px, transparent 5px),
-    radial-gradient(ellipse at 42% 72%, var(--olive) 0 8px, transparent 9px);
+  top: 12px;
+  width: 28px;
+  height: 28px;
+  color: var(--olive);
+  opacity: 0.35;
 }
 
 .desktop-frame {
@@ -371,7 +390,7 @@ button {
 
 .primary-button {
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
   padding: 0 18px;
   box-shadow: 0 12px 24px rgba(80, 96, 50, 0.22);
 }
@@ -512,7 +531,7 @@ button {
   height: 48px;
   border-radius: 14px;
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
   display: grid;
   place-items: center;
   text-align: center;
@@ -530,7 +549,7 @@ button {
 
 .timeline-item small {
   display: block;
-  color: #82775a;
+  color: var(--muted);
   margin-top: 6px;
   line-height: 1.4;
 }
@@ -561,13 +580,10 @@ button {
 }
 
 .paw-mark {
-  width: 48px;
-  height: 40px;
-  background:
-    radial-gradient(ellipse at 18% 45%, rgba(112, 128, 73, 0.38) 0 5px, transparent 6px),
-    radial-gradient(ellipse at 40% 25%, rgba(112, 128, 73, 0.38) 0 5px, transparent 6px),
-    radial-gradient(ellipse at 62% 26%, rgba(112, 128, 73, 0.38) 0 5px, transparent 6px),
-    radial-gradient(ellipse at 46% 68%, rgba(112, 128, 73, 0.38) 0 11px, transparent 12px);
+  width: 44px;
+  height: 44px;
+  color: var(--olive);
+  opacity: 0.55;
 }
 
 .area-tabs {
@@ -577,8 +593,9 @@ button {
   min-width: 0;
   max-width: 100%;
   overflow-x: auto;
-  padding: 4px 1px 8px;
+  padding: 6px 2px 12px;
   scrollbar-width: none;
+  margin-bottom: 4px;
 }
 
 .area-tabs::-webkit-scrollbar {
@@ -587,20 +604,51 @@ button {
 
 .area-tabs button {
   flex: 0 0 auto;
-  background: var(--surface);
+  background: var(--paper);
   color: var(--olive-dark);
   border: 1px solid var(--line);
-  padding: 0 14px;
+  padding: 0 16px;
+  gap: 7px;
+  font-weight: 850;
+  font-size: 0.92rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.area-tabs button svg {
+  flex: 0 0 auto;
+  opacity: 0.85;
+}
+
+.area-tabs button:hover {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.area-tabs button:focus-visible {
+  outline: 0;
+  border-color: var(--olive);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.area-tabs.compact {
+  padding: 4px 2px 10px;
 }
 
 .area-tabs.compact button {
-  min-height: 38px;
-  padding: 0 12px;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.88rem;
 }
 
 .area-tabs button.active {
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
+  border-color: var(--olive);
+  box-shadow: 0 10px 22px rgba(80, 96, 50, 0.22);
+}
+
+.area-tabs button.active svg {
+  opacity: 1;
 }
 
 .form-grid {
@@ -778,7 +826,7 @@ select:focus {
 
 .split-mini-list button.active {
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
 }
 
 .split-day-picker {
@@ -811,7 +859,7 @@ select:focus {
 
 .split-day-picker button.active {
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
 }
 
 .split-day-picker button.active span {
@@ -902,7 +950,7 @@ select:focus {
 }
 
 .bottom-nav button.active {
-  color: #fff8e8;
+  color: var(--on-olive);
   background: var(--olive);
 }
 
@@ -948,7 +996,7 @@ select:focus {
 
   .desktop-rail button.active {
     background: var(--olive);
-    color: #fff8e8;
+    color: var(--on-olive);
   }
 
   .bottom-nav {
@@ -1060,14 +1108,14 @@ select:focus {
 }
 
 .app-header h1 {
-  color: #34372b;
+  color: var(--ink);
   font-size: clamp(3.1rem, 8vw, 4.45rem);
   line-height: 0.92;
 }
 
 .app-header p {
   margin-top: 12px;
-  color: #4d5144;
+  color: var(--muted);
   font-size: clamp(1rem, 2.8vw, 1.36rem);
 }
 
@@ -1134,7 +1182,7 @@ select:focus {
 
 .filter-rail button.active {
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
   border-color: var(--olive);
 }
 
@@ -1170,13 +1218,12 @@ select:focus {
   position: absolute;
   right: 42px;
   top: 58px;
-  width: 120px;
-  height: 88px;
-  background:
-    radial-gradient(ellipse at 18% 45%, rgba(112, 128, 73, 0.18) 0 8px, transparent 9px),
-    radial-gradient(ellipse at 38% 24%, rgba(112, 128, 73, 0.18) 0 8px, transparent 9px),
-    radial-gradient(ellipse at 60% 27%, rgba(112, 128, 73, 0.18) 0 8px, transparent 9px),
-    radial-gradient(ellipse at 43% 70%, rgba(112, 128, 73, 0.18) 0 15px, transparent 16px);
+  width: 110px;
+  height: 110px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23708049' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='4' r='2'/><circle cx='18' cy='8' r='2'/><circle cx='20' cy='16' r='2'/><path d='M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.4 2.5 15.35 2.5 13a2.5 2.5 0 0 1 5 0V12a5 5 0 0 1 1.5-3.5z'/></svg>");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.22;
 }
 
 .board-head h2,
@@ -1217,7 +1264,7 @@ select:focus {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #fff8e8;
+  color: var(--on-olive);
 }
 
 .today-icon.olive {
@@ -1278,14 +1325,10 @@ select:focus {
   position: absolute;
   right: 30px;
   top: 28px;
-  width: 76px;
-  height: 58px;
-  opacity: 0.3;
-  background:
-    radial-gradient(ellipse at 18% 45%, var(--olive) 0 7px, transparent 8px),
-    radial-gradient(ellipse at 38% 24%, var(--olive) 0 7px, transparent 8px),
-    radial-gradient(ellipse at 60% 27%, var(--olive) 0 7px, transparent 8px),
-    radial-gradient(ellipse at 43% 70%, var(--olive) 0 13px, transparent 14px);
+  width: 72px;
+  height: 72px;
+  color: var(--olive);
+  opacity: 0.35;
 }
 
 .timeline-card,
@@ -1344,7 +1387,7 @@ select:focus {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #fff8e8;
+  color: var(--on-olive);
   background: var(--olive);
   z-index: 1;
 }
@@ -1482,7 +1525,7 @@ select:focus {
   border: 0;
   border-radius: 999px;
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
   display: grid;
   grid-template-columns: 54px 1fr 42px;
   align-items: center;
@@ -1503,15 +1546,12 @@ select:focus {
   color: var(--olive);
 }
 
-.floating-quick-add i {
-  width: 36px;
-  height: 30px;
-  opacity: 0.9;
-  background:
-    radial-gradient(ellipse at 18% 45%, #fff8e8 0 4px, transparent 5px),
-    radial-gradient(ellipse at 38% 24%, #fff8e8 0 4px, transparent 5px),
-    radial-gradient(ellipse at 60% 27%, #fff8e8 0 4px, transparent 5px),
-    radial-gradient(ellipse at 43% 70%, #fff8e8 0 8px, transparent 9px);
+.floating-quick-add > svg {
+  width: 26px;
+  height: 26px;
+  justify-self: center;
+  color: var(--on-olive);
+  opacity: 0.92;
 }
 
 .bottom-nav {
@@ -1799,7 +1839,7 @@ select:focus {
   border-radius: 999px;
   display: grid;
   place-items: center;
-  color: #fff8e8;
+  color: var(--on-olive);
   background: var(--olive);
   box-shadow: 0 18px 38px rgba(80, 96, 50, 0.32);
 }
@@ -1857,7 +1897,7 @@ select:focus {
 
 .food-drawer-tabs button.active,
 .food-result-list button.active {
-  color: #fff8e8;
+  color: var(--on-olive);
   background: var(--olive);
 }
 
@@ -2038,7 +2078,7 @@ select:focus {
   border-radius: 19px;
   display: grid;
   place-items: center;
-  color: #fff8e8;
+  color: var(--on-olive);
   background: var(--olive);
   box-shadow: 0 14px 30px rgba(80, 96, 50, 0.22);
 }
@@ -2231,7 +2271,7 @@ select:focus {
   min-width: 190px;
   padding: 0 22px;
   background: var(--olive);
-  color: #fff8e8;
+  color: var(--on-olive);
   box-shadow: 0 16px 36px rgba(80, 96, 50, 0.25);
 }
 
@@ -2562,4 +2602,346 @@ select:focus {
   .food-item-row button {
     grid-column: 2;
   }
+}
+
+/* Header controls (theme toggle + calendar) */
+.header-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 8px;
+}
+
+.theme-toggle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--olive-dark);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.theme-toggle:hover {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.theme-toggle:focus-visible {
+  outline: 0;
+  border-color: var(--olive);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+/* Settings theme picker */
+.theme-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.theme-picker button {
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--olive-dark);
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+}
+
+.theme-picker button:hover {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.theme-picker button:focus-visible {
+  outline: 0;
+  border-color: var(--olive);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.theme-picker button.active {
+  background: var(--olive);
+  color: var(--on-olive);
+  border-color: var(--olive);
+}
+
+@media (max-width: 430px) {
+  .theme-picker {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode overrides for hardcoded light-mode values */
+:root[data-theme='dark'] {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] body {
+  background: var(--bg);
+}
+
+:root[data-theme='dark'] .app-header h1 {
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] .app-header p {
+  color: var(--muted);
+}
+
+:root[data-theme='dark'] .hero-panel,
+:root[data-theme='dark'] .card {
+  background: var(--surface);
+}
+
+:root[data-theme='dark'] .today-board,
+:root[data-theme='dark'] .timeline-card,
+:root[data-theme='dark'] .trend-card {
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme='dark'] .today-board::after,
+:root[data-theme='dark'] .app-shell::before,
+:root[data-theme='dark'] .app-shell::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239bb05f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='4' r='2'/><circle cx='18' cy='8' r='2'/><circle cx='20' cy='16' r='2'/><path d='M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.4 2.5 15.35 2.5 13a2.5 2.5 0 0 1 5 0V12a5 5 0 0 1 1.5-3.5z'/></svg>");
+  opacity: 0.28;
+}
+
+:root[data-theme='dark'] .score-paws,
+:root[data-theme='dark'] .mini-paws,
+:root[data-theme='dark'] .paw-mark {
+  opacity: 0.5;
+}
+
+:root[data-theme='dark'] .score-ring,
+:root[data-theme='dark'] .food-ring {
+  background:
+    radial-gradient(circle at center, var(--surface) 0 58%, transparent 59%),
+    conic-gradient(var(--olive) var(--score, var(--food-progress, 0%)), rgba(155, 176, 95, 0.18) 0);
+}
+
+:root[data-theme='dark'] .food-ring {
+  background:
+    radial-gradient(circle at center, var(--paper) 0 58%, transparent 59%),
+    conic-gradient(var(--olive) var(--food-progress), rgba(155, 176, 95, 0.18) 0);
+}
+
+:root[data-theme='dark'] .calendar-button {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+:root[data-theme='dark'] .filter-rail button {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+:root[data-theme='dark'] .filter-rail button.active {
+  background: var(--olive);
+  color: var(--on-olive);
+  border-color: var(--olive);
+}
+
+:root[data-theme='dark'] .timeline-item,
+:root[data-theme='dark'] .compact-entry,
+:root[data-theme='dark'] .insight-card,
+:root[data-theme='dark'] .metric-list p,
+:root[data-theme='dark'] .quick-grid button,
+:root[data-theme='dark'] .split-banner,
+:root[data-theme='dark'] .target-strip,
+:root[data-theme='dark'] .split-status,
+:root[data-theme='dark'] .split-day-editor,
+:root[data-theme='dark'] .split-day-picker button,
+:root[data-theme='dark'] .barcode-box,
+:root[data-theme='dark'] .meal-slot-card,
+:root[data-theme='dark'] .food-item-row,
+:root[data-theme='dark'] .food-result-list button,
+:root[data-theme='dark'] .selected-food-panel,
+:root[data-theme='dark'] .weight-panel,
+:root[data-theme='dark'] .filter-button,
+:root[data-theme='dark'] .trend-tile,
+:root[data-theme='dark'] .food-daily-card,
+:root[data-theme='dark'] .food-drawer-tabs button {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] .entry-actions button {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] .split-import-panel,
+:root[data-theme='dark'] .onboarding-split-import {
+  background: var(--paper);
+  border-color: var(--line-strong);
+}
+
+:root[data-theme='dark'] .timeline-more {
+  border-top-color: var(--line);
+  color: var(--olive-dark);
+}
+
+:root[data-theme='dark'] .mock-timeline-list::before {
+  background: var(--line-strong);
+}
+
+:root[data-theme='dark'] .mock-entry-body,
+:root[data-theme='dark'] .mock-entry-body strong {
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] .mock-entry-chevron {
+  color: rgba(236, 225, 200, 0.4);
+}
+
+:root[data-theme='dark'] input,
+:root[data-theme='dark'] textarea,
+:root[data-theme='dark'] select {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+:root[data-theme='dark'] .food-search-input {
+  background: var(--paper);
+  border-color: var(--line);
+}
+
+:root[data-theme='dark'] .bottom-nav {
+  background: var(--surface-strong);
+  border-color: var(--line);
+}
+
+:root[data-theme='dark'] .bottom-nav button {
+  color: var(--muted);
+}
+
+:root[data-theme='dark'] .bottom-nav button.active {
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] .floating-quick-add {
+  background: var(--olive);
+  color: var(--on-olive);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme='dark'] .cat-badge,
+:root[data-theme='dark'] .cat-silhouette,
+:root[data-theme='dark'] .cat-silhouette::before,
+:root[data-theme='dark'] .onboarding-cat,
+:root[data-theme='dark'] .onboarding-cat::before {
+  background: var(--olive-dark);
+}
+
+:root[data-theme='dark'] .cat-silhouette::after,
+:root[data-theme='dark'] .onboarding-cat::after {
+  border-color: var(--olive-dark);
+}
+
+:root[data-theme='dark'] .onboarding-overlay {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+:root[data-theme='dark'] .onboarding-modal {
+  background:
+    radial-gradient(circle at 8% 8%, rgba(155, 176, 95, 0.14) 0 58px, transparent 59px),
+    linear-gradient(145deg, var(--surface), var(--surface-strong));
+  border-color: var(--line-strong);
+}
+
+:root[data-theme='dark'] .onboarding-choice-grid div,
+:root[data-theme='dark'] .onboarding-target-card,
+:root[data-theme='dark'] .onboarding-back {
+  background: var(--paper);
+  border-color: var(--line);
+}
+
+:root[data-theme='dark'] .onboarding-choice-grid strong {
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] .onboarding-target-card span,
+:root[data-theme='dark'] .target-strip span,
+:root[data-theme='dark'] .split-mini-list button,
+:root[data-theme='dark'] .selected-food-macros span,
+:root[data-theme='dark'] .recipe-total,
+:root[data-theme='dark'] .food-item-row button,
+:root[data-theme='dark'] .food-drawer-head button {
+  background: rgba(155, 176, 95, 0.16);
+  color: var(--olive-dark);
+}
+
+:root[data-theme='dark'] .timeline-date,
+:root[data-theme='dark'] .today-icon.olive,
+:root[data-theme='dark'] .onboarding-icon {
+  background: var(--olive);
+  color: var(--on-olive);
+}
+
+:root[data-theme='dark'] .food-drawer {
+  background: linear-gradient(145deg, var(--surface), var(--surface-strong));
+  border-color: var(--line-strong);
+}
+
+:root[data-theme='dark'] .food-drawer-backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme='dark'] .scanner-video,
+:root[data-theme='dark'] .camera-stage {
+  background: #0e0f0a;
+  border-color: var(--line);
+}
+
+:root[data-theme='dark'] .macro-bar i {
+  background: rgba(155, 176, 95, 0.18);
+}
+
+:root[data-theme='dark'] .macro-bar b {
+  background: linear-gradient(90deg, var(--olive), #c6d792);
+}
+
+:root[data-theme='dark'] .onboarding-meter {
+  background: rgba(155, 176, 95, 0.18);
+}
+
+:root[data-theme='dark'] .onboarding-meter span {
+  background: linear-gradient(90deg, var(--olive), #c6d792);
+}
+
+:root[data-theme='dark'] .onboarding-dots span {
+  background: rgba(155, 176, 95, 0.28);
+}
+
+:root[data-theme='dark'] .timeline-item small {
+  color: var(--muted);
+}
+
+:root[data-theme='dark'] .weight-chart svg {
+  background:
+    linear-gradient(rgba(155, 176, 95, 0.12) 1px, transparent 1px) 0 0 / 100% 25%,
+    var(--paper);
 }

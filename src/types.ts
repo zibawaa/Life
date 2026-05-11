@@ -53,12 +53,15 @@ export interface WorkoutSplitDay {
   notes: string;
 }
 
+export type ThemePreference = 'system' | 'light' | 'dark';
+
 export interface AppSettings {
   onboardingCompleted: boolean;
   profile: ProfileSettings;
   splitStartDate: string;
   activeSplitDayIndex: number;
   workoutSplit: WorkoutSplitDay[];
+  theme: ThemePreference;
 }
 
 export interface BaseEntry {

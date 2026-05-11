@@ -1,6 +1,6 @@
-import { Activity, BarChart3, CalendarDays, Dumbbell, HeartPulse, Home, Plus, Settings, Smile, Soup, Target, Trophy, WalletCards } from 'lucide-react';
+import { Activity, BarChart3, CalendarDays, Dumbbell, HeartPulse, Home, Moon, MonitorSmartphone, PawPrint, Plus, Settings, Smile, Soup, Sun, Target, Trophy, WalletCards } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { AreaKey, Screen } from '../types';
+import type { AreaKey, Screen, ThemePreference } from '../types';
 import { useHorizontalDrag } from '../hooks/useHorizontalDrag';
 
 const navItems: Array<{ key: Screen; label: string; icon: LucideIcon }> = [
@@ -16,14 +16,28 @@ export function AppShell({
   onNavigate,
   onAreaShortcut,
   children,
-  dimmed = false
+  dimmed = false,
+  themePreference = 'system',
+  resolvedTheme = 'light',
+  onCycleTheme
 }: {
   screen: Screen;
   onNavigate: (screen: Screen) => void;
   onAreaShortcut: (area: AreaKey) => void;
   children: React.ReactNode;
   dimmed?: boolean;
+  themePreference?: ThemePreference;
+  resolvedTheme?: 'light' | 'dark';
+  onCycleTheme?: () => void;
 }) {
+  const themeIcon = themePreference === 'system'
+    ? <MonitorSmartphone size={20} />
+    : resolvedTheme === 'dark'
+      ? <Moon size={20} />
+      : <Sun size={20} />;
+  const themeTitle = themePreference === 'system'
+    ? `Theme: system (${resolvedTheme})`
+    : `Theme: ${themePreference}`;
   const filterDrag = useHorizontalDrag<HTMLDivElement>();
   const filters: Array<{ key: 'all' | AreaKey; label: string; icon?: LucideIcon }> = [
     { key: 'all', label: 'All' },
@@ -44,12 +58,25 @@ export function AppShell({
           <p>Log today. Learn tomorrow. Live better.</p>
         </div>
         <div className="cat-lockup" aria-hidden="true">
-          <span className="mini-paws" />
+          <PawPrint className="mini-paws" size={28} />
           <span className="cat-silhouette" />
         </div>
-        <button type="button" className="calendar-button" aria-label="Calendar">
-          <CalendarDays size={22} />
-        </button>
+        <div className="header-controls">
+          {onCycleTheme && (
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={onCycleTheme}
+              aria-label={themeTitle}
+              title={themeTitle}
+            >
+              {themeIcon}
+            </button>
+          )}
+          <button type="button" className="calendar-button" aria-label="Calendar">
+            <CalendarDays size={22} />
+          </button>
+        </div>
       </header>
 
       <div
