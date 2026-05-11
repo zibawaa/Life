@@ -11,6 +11,8 @@
     "test:food": "node scripts/test-food-engine.mjs"
   },
   "dependencies": {
+    "@zxing/browser": "^0.2.0",
+    "@zxing/library": "^0.22.0",
     "dexie": "^4.0.11",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
