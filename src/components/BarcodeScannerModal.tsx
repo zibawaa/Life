@@ -1,6 +1,5 @@
 import { Camera, Keyboard, RefreshCw, ScanBarcode, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import type { IScannerControls } from '@zxing/browser';
 import type { FoodEntry, LocalFood, MealSlot, ProductLookupResult } from '../types';
 import { generateId, todayKey } from '../data/defaults';
 import { lookupOpenFoodFactsProduct } from '../data/openFoodFacts';
@@ -10,9 +9,13 @@ const supportsCamera = typeof navigator !== 'undefined' && !!navigator.mediaDevi
 
 const loadZxing = () =>
   Promise.all([import('@zxing/library'), import('@zxing/browser')]).then(([lib, browser]) => ({
+    MultiFormatReader: lib.MultiFormatReader,
     BarcodeFormat: lib.BarcodeFormat,
     DecodeHintType: lib.DecodeHintType,
-    BrowserMultiFormatReader: browser.BrowserMultiFormatReader
+    HybridBinarizer: lib.HybridBinarizer,
+    BinaryBitmap: lib.BinaryBitmap,
+    NotFoundException: lib.NotFoundException,
+    HTMLCanvasElementLuminanceSource: browser.HTMLCanvasElementLuminanceSource
   }));
 
 const MEAL_SLOTS: Array<{ key: MealSlot; label: string }> = [
@@ -50,7 +53,6 @@ export function BarcodeScannerModal({
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const zxingControlsRef = useRef<IScannerControls | null>(null);
   const sampleCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const lookupTokenRef = useRef(0);
 
@@ -77,9 +79,10 @@ export function BarcodeScannerModal({
     setManualCode('');
   }, [open]);
 
-  // Camera + decoder lifecycle. Single effect, sequential: stream → decoder.
-  // This avoids a race where the ZXing chunk loads before getUserMedia resolves
-  // and the decoder gives up because streamRef.current is null.
+  // Camera + decoder lifecycle.
+  // Manual frame loop: grab the central viewfinder-shaped region of each frame,
+  // hand the cropped canvas to the decoder. Much better signal-to-noise than
+  // letting ZXing scan the entire 1280x720 frame, and we control timing.
   useEffect(() => {
     if (!open || stage !== 'scanning') return;
     if (!supportsCamera) {
@@ -98,78 +101,129 @@ export function BarcodeScannerModal({
       audio: false
     };
 
-    const startNative = async () => {
+    const start = async () => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       if (cancelled) {
         stream.getTracks().forEach((t) => t.stop());
         return;
       }
       streamRef.current = stream;
+
+      // Best-effort: ask for continuous autofocus when iOS exposes it
+      try {
+        const track = stream.getVideoTracks()[0];
+        const caps = (track as MediaStreamTrack & { getCapabilities?: () => Record<string, unknown> }).getCapabilities?.();
+        const focusModes = caps && Array.isArray((caps as { focusMode?: string[] }).focusMode)
+          ? (caps as { focusMode?: string[] }).focusMode
+          : undefined;
+        if (focusModes && focusModes.includes('continuous')) {
+          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] });
+        }
+      } catch {
+        /* iOS may reject advanced constraints — ignore */
+      }
+
       const video = videoRef.current;
       if (!video) return;
       video.srcObject = stream;
       video.setAttribute('playsinline', 'true');
       await video.play().catch(() => undefined);
 
-      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
-      const loop = async () => {
-        if (cancelled) return;
-        if (video.readyState < 2 || video.videoWidth === 0) {
-          window.setTimeout(loop, 200);
-          return;
+      // Wait for the first decodable frame
+      const waitForFrame = async () => {
+        while (!cancelled && video && (video.readyState < 2 || video.videoWidth === 0)) {
+          await new Promise((r) => window.setTimeout(r, 60));
         }
-        try {
-          const codes = await detector.detect(video);
-          const raw = codes[0]?.rawValue;
-          if (raw) {
-            handleDetected(raw);
-            return;
-          }
-        } catch {
-          /* keep trying */
-        }
-        window.setTimeout(loop, 250);
       };
-      loop();
-    };
-
-    const startZxing = async () => {
-      const { BarcodeFormat, DecodeHintType, BrowserMultiFormatReader } = await loadZxing();
+      await waitForFrame();
       if (cancelled) return;
-      const video = videoRef.current;
-      if (!video) return;
 
-      const hints = new Map();
-      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-        BarcodeFormat.EAN_13,
-        BarcodeFormat.UPC_A,
-        BarcodeFormat.UPC_E,
-        BarcodeFormat.EAN_8,
-        BarcodeFormat.CODE_128
-      ]);
-      hints.set(DecodeHintType.TRY_HARDER, true);
-      const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 120 });
+      const cropCanvas = document.createElement('canvas');
+      const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
+      if (!cropCtx) return;
 
-      const controls = await reader.decodeFromConstraints(constraints, video, (result, _err, ctrls) => {
-        if (cancelled) {
-          ctrls.stop();
+      // Build a decode function — native BarcodeDetector or ZXing classic on cropped canvas.
+      let decode: () => Promise<string | null>;
+
+      if (supportsNativeDetector) {
+        const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+        decode = async () => {
+          try {
+            const codes = await detector.detect(cropCanvas);
+            return codes[0]?.rawValue ?? null;
+          } catch {
+            return null;
+          }
+        };
+      } else {
+        const zxing = await loadZxing();
+        if (cancelled) return;
+        const {
+          MultiFormatReader,
+          BarcodeFormat,
+          DecodeHintType,
+          HybridBinarizer,
+          BinaryBitmap,
+          NotFoundException,
+          HTMLCanvasElementLuminanceSource
+        } = zxing;
+
+        const hints = new Map<unknown, unknown>();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+          BarcodeFormat.EAN_13,
+          BarcodeFormat.UPC_A,
+          BarcodeFormat.UPC_E,
+          BarcodeFormat.EAN_8,
+          BarcodeFormat.CODE_128
+        ]);
+        hints.set(DecodeHintType.TRY_HARDER, true);
+        const reader = new MultiFormatReader();
+        (reader as unknown as { setHints: (h: Map<unknown, unknown>) => void }).setHints(hints);
+
+        decode = async () => {
+          try {
+            const luminance = new HTMLCanvasElementLuminanceSource(cropCanvas);
+            const bitmap = new BinaryBitmap(new HybridBinarizer(luminance));
+            const result = reader.decode(bitmap);
+            return result.getText();
+          } catch (error) {
+            if (error instanceof NotFoundException) return null;
+            return null;
+          } finally {
+            reader.reset();
+          }
+        };
+      }
+
+      // Tick loop — pulls the central ~85% wide / ~50% tall slice of the camera frame,
+      // matching the on-screen viewfinder.
+      const tick = async () => {
+        if (cancelled || !video) return;
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        if (vw === 0 || vh === 0) {
+          window.setTimeout(tick, 120);
           return;
         }
-        zxingControlsRef.current = ctrls;
-        if (result) {
-          ctrls.stop();
-          handleDetected(result.getText());
-        }
-      });
-      zxingControlsRef.current = controls;
-      // Capture the stream ZXing created so brightness sampling and cleanup work.
-      const mediaStream = video.srcObject;
-      if (mediaStream instanceof MediaStream) {
-        streamRef.current = mediaStream;
-      }
-    };
 
-    const start = supportsNativeDetector ? startNative : startZxing;
+        const cropW = Math.max(160, Math.floor(vw * 0.85));
+        const cropH = Math.max(120, Math.floor(vh * 0.52));
+        const cropX = Math.floor((vw - cropW) / 2);
+        const cropY = Math.floor((vh - cropH) / 2);
+
+        if (cropCanvas.width !== cropW) cropCanvas.width = cropW;
+        if (cropCanvas.height !== cropH) cropCanvas.height = cropH;
+        cropCtx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+        const raw = await decode();
+        if (raw) {
+          handleDetected(raw);
+          return;
+        }
+        window.setTimeout(tick, 90);
+      };
+      tick();
+    };
 
     start().catch((error) => {
       if (cancelled) return;
@@ -177,14 +231,12 @@ export function BarcodeScannerModal({
       setStatus(
         error instanceof Error && error.name === 'NotAllowedError'
           ? 'Camera permission was blocked. Enable it in Settings → Safari → Camera.'
-          : 'Could not start the scanner. Try manual entry.'
+          : 'Could not start the scanner.'
       );
     });
 
     return () => {
       cancelled = true;
-      zxingControlsRef.current?.stop();
-      zxingControlsRef.current = null;
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
       if (videoRef.current) videoRef.current.srcObject = null;
