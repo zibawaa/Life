@@ -1,6 +1,7 @@
-import { ScanBarcode, Save } from 'lucide-react';
+import { ScanBarcode, Save, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
+import { FoodSearchModal } from '../components/FoodSearchModal';
 import { AreaTabs, Card, Field, areaLabels, parseTags } from '../components/Primitives';
 import { generateId, todayKey } from '../data/defaults';
 import { getSelectedSplitDay } from '../data/nutrition';
@@ -269,6 +270,7 @@ export function AddScreen({
   const [splitPaste, setSplitPaste] = useState('');
   const [splitImportMessage, setSplitImportMessage] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     setForm(editingEntry ? entryToForm(editingEntry, settings) : blankForm(activeType, settings));
@@ -358,6 +360,13 @@ export function AddScreen({
       <BarcodeScannerModal
         open={scannerOpen}
         onClose={() => setScannerOpen(false)}
+        onLog={onSave}
+        onSaveLocalFood={onSaveLocalFood}
+        defaultDate={form.date || todayKey()}
+      />
+      <FoodSearchModal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
         onLog={onSave}
         onSaveLocalFood={onSaveLocalFood}
         defaultDate={form.date || todayKey()}
@@ -486,10 +495,15 @@ export function AddScreen({
 
         {activeType === 'food' && (
           <>
-            <button type="button" className="primary-button scan-launch" onClick={() => setScannerOpen(true)}>
-              <ScanBarcode size={18} /> Scan barcode
-            </button>
-            <p className="card-copy scan-launch-hint">Opens a full-screen scanner. Detected products are logged with meal slot and macros.</p>
+            <div className="food-quick-actions">
+              <button type="button" className="primary-button scan-launch" onClick={() => setScannerOpen(true)}>
+                <ScanBarcode size={18} /> Scan barcode
+              </button>
+              <button type="button" className="secondary-button search-launch" onClick={() => setSearchOpen(true)}>
+                <Search size={18} /> Search foods
+              </button>
+            </div>
+            <p className="card-copy scan-launch-hint">Scan, search by brand and product (e.g. "aldi tuna"), or fill the form manually below.</p>
             <div className="form-grid">
               <Field label="Food or meal">
                 <input value={form.meal} onChange={(event) => set('meal', event.target.value)} />
