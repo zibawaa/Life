@@ -1,4 +1,4 @@
-import { Camera, RefreshCw, ScanBarcode, X } from 'lucide-react';
+import { Camera, Keyboard, RefreshCw, ScanBarcode, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { IScannerControls } from '@zxing/browser';
 import type { FoodEntry, LocalFood, MealSlot, ProductLookupResult } from '../types';
@@ -61,8 +61,10 @@ export function BarcodeScannerModal({
   const [grams, setGrams] = useState(100);
   const [mealSlot, setMealSlot] = useState<MealSlot>(inferMealSlot());
   const [saving, setSaving] = useState(false);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualCode, setManualCode] = useState('');
 
-  // Mount/unmount camera lifecycle
+  // Reset modal state when opened
   useEffect(() => {
     if (!open) return;
     setStage('scanning');
@@ -71,47 +73,113 @@ export function BarcodeScannerModal({
     setBrightness('ok');
     setGrams(100);
     setMealSlot(inferMealSlot());
+    setManualMode(false);
+    setManualCode('');
+  }, [open]);
+
+  // Camera + decoder lifecycle. Single effect, sequential: stream → decoder.
+  // This avoids a race where the ZXing chunk loads before getUserMedia resolves
+  // and the decoder gives up because streamRef.current is null.
+  useEffect(() => {
+    if (!open || stage !== 'scanning') return;
+    if (!supportsCamera) {
+      setStage('error');
+      setStatus('This device cannot access the camera.');
+      return;
+    }
 
     let cancelled = false;
+    const constraints: MediaStreamConstraints = {
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    };
 
-    const start = async () => {
-      if (!supportsCamera) {
-        setStage('error');
-        setStatus('This device cannot access the camera.');
+    const startNative = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (cancelled) {
+        stream.getTracks().forEach((t) => t.stop());
         return;
       }
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          },
-          audio: false
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop());
+      streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) return;
+      video.srcObject = stream;
+      video.setAttribute('playsinline', 'true');
+      await video.play().catch(() => undefined);
+
+      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+      const loop = async () => {
+        if (cancelled) return;
+        if (video.readyState < 2 || video.videoWidth === 0) {
+          window.setTimeout(loop, 200);
           return;
         }
-        streamRef.current = stream;
-        const video = videoRef.current;
-        if (video) {
-          video.srcObject = stream;
-          video.setAttribute('playsinline', 'true');
-          await video.play().catch(() => undefined);
+        try {
+          const codes = await detector.detect(video);
+          const raw = codes[0]?.rawValue;
+          if (raw) {
+            handleDetected(raw);
+            return;
+          }
+        } catch {
+          /* keep trying */
         }
-      } catch (error) {
-        if (cancelled) return;
-        setStage('error');
-        setStatus(
-          error instanceof Error && error.name === 'NotAllowedError'
-            ? 'Camera permission was blocked. Enable it in Settings → Safari → Camera.'
-            : 'Camera unavailable on this device.'
-        );
+        window.setTimeout(loop, 250);
+      };
+      loop();
+    };
+
+    const startZxing = async () => {
+      const { BarcodeFormat, DecodeHintType, BrowserMultiFormatReader } = await loadZxing();
+      if (cancelled) return;
+      const video = videoRef.current;
+      if (!video) return;
+
+      const hints = new Map();
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.UPC_A,
+        BarcodeFormat.UPC_E,
+        BarcodeFormat.EAN_8,
+        BarcodeFormat.CODE_128
+      ]);
+      hints.set(DecodeHintType.TRY_HARDER, true);
+      const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 120 });
+
+      const controls = await reader.decodeFromConstraints(constraints, video, (result, _err, ctrls) => {
+        if (cancelled) {
+          ctrls.stop();
+          return;
+        }
+        zxingControlsRef.current = ctrls;
+        if (result) {
+          ctrls.stop();
+          handleDetected(result.getText());
+        }
+      });
+      zxingControlsRef.current = controls;
+      // Capture the stream ZXing created so brightness sampling and cleanup work.
+      const mediaStream = video.srcObject;
+      if (mediaStream instanceof MediaStream) {
+        streamRef.current = mediaStream;
       }
     };
 
-    void start();
+    const start = supportsNativeDetector ? startNative : startZxing;
+
+    start().catch((error) => {
+      if (cancelled) return;
+      setStage('error');
+      setStatus(
+        error instanceof Error && error.name === 'NotAllowedError'
+          ? 'Camera permission was blocked. Enable it in Settings → Safari → Camera.'
+          : 'Could not start the scanner. Try manual entry.'
+      );
+    });
 
     return () => {
       cancelled = true;
@@ -120,83 +188,6 @@ export function BarcodeScannerModal({
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
       if (videoRef.current) videoRef.current.srcObject = null;
-    };
-  }, [open]);
-
-  // Native BarcodeDetector loop
-  useEffect(() => {
-    if (!open || stage !== 'scanning' || !supportsNativeDetector) return;
-    let cancelled = false;
-    const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
-
-    const loop = async () => {
-      if (cancelled) return;
-      const video = videoRef.current;
-      if (!video || video.readyState < 2) {
-        window.setTimeout(loop, 250);
-        return;
-      }
-      try {
-        const codes = await detector.detect(video);
-        const raw = codes[0]?.rawValue;
-        if (raw) {
-          handleDetected(raw);
-          return;
-        }
-      } catch {
-        /* keep trying */
-      }
-      window.setTimeout(loop, 300);
-    };
-
-    loop();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, stage]);
-
-  // ZXing fallback (iOS Safari etc.)
-  useEffect(() => {
-    if (!open || stage !== 'scanning' || supportsNativeDetector) return;
-    const video = videoRef.current;
-    if (!video) return;
-    let cancelled = false;
-
-    loadZxing()
-      .then(({ BarcodeFormat, DecodeHintType, BrowserMultiFormatReader }) => {
-        if (cancelled || !streamRef.current) return undefined;
-        const hints = new Map();
-        hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-          BarcodeFormat.EAN_13,
-          BarcodeFormat.EAN_8,
-          BarcodeFormat.UPC_A,
-          BarcodeFormat.UPC_E
-        ]);
-        hints.set(DecodeHintType.TRY_HARDER, true);
-        const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 150 });
-        return reader.decodeFromStream(streamRef.current, video, (result, _err, controls) => {
-          if (cancelled) {
-            controls.stop();
-            return;
-          }
-          zxingControlsRef.current = controls;
-          if (result) {
-            controls.stop();
-            handleDetected(result.getText());
-          }
-        });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setStage('error');
-        setStatus('Could not start the scanner. Try manual entry.');
-      });
-
-    return () => {
-      cancelled = true;
-      zxingControlsRef.current?.stop();
-      zxingControlsRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, stage]);
@@ -362,10 +353,43 @@ export function BarcodeScannerModal({
             </button>
             <div className={`scanner-status pill brightness-${brightness}`}>
               <ScanBarcode size={16} />
-              <span>{stage === 'looking-up' ? status : status}</span>
+              <span>{status}</span>
             </div>
             <span aria-hidden="true" className="scanner-spacer" />
           </header>
+
+          <div className="scanner-bottom">
+            {manualMode ? (
+              <form
+                className="scanner-manual"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const code = manualCode.trim();
+                  if (code) void handleDetected(code);
+                }}
+              >
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={manualCode}
+                  onChange={(event) => setManualCode(event.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="Type the digits under the barcode"
+                  autoFocus
+                />
+                <button type="submit" className="primary-button" disabled={!manualCode.trim()}>
+                  Look up
+                </button>
+                <button type="button" className="scanner-text-link" onClick={() => setManualMode(false)}>
+                  Back to camera
+                </button>
+              </form>
+            ) : (
+              <button type="button" className="scanner-text-link" onClick={() => setManualMode(true)}>
+                <Keyboard size={16} /> Type the code instead
+              </button>
+            )}
+          </div>
         </>
       )}
 
