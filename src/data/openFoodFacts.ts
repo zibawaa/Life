@@ -108,6 +108,44 @@ export async function lookupOpenFoodFactsProduct(barcode: string): Promise<Produ
   return mapProduct(cleanBarcode, data.product);
 }
 
+async function fetchProductImage(barcode: string): Promise<string | undefined> {
+  const cleaned = barcode.replace(/\D/g, '');
+  if (!cleaned) return undefined;
+  try {
+    const response = await fetch(
+      `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(cleaned)}.json?fields=image_front_small_url,image_front_url,image_small_url,image_url`,
+      { headers: { Accept: 'application/json' } }
+    );
+    if (!response.ok) return undefined;
+    const data = (await response.json()) as OpenFoodFactsResponse;
+    if (data.status !== 1 || !data.product) return undefined;
+    return (
+      data.product.image_front_small_url ||
+      data.product.image_front_url ||
+      data.product.image_small_url ||
+      data.product.image_url ||
+      undefined
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Search results from the CGI endpoint often omit image_front_small_url
+ * even when the product has a photo. This fills the gap in parallel by
+ * hitting the v2 product API for each result that's missing an image.
+ */
+export async function enrichWithImages(products: ProductLookupResult[]): Promise<ProductLookupResult[]> {
+  return Promise.all(
+    products.map(async (product) => {
+      if (product.imageUrl || !product.barcode) return product;
+      const imageUrl = await fetchProductImage(product.barcode);
+      return imageUrl ? { ...product, imageUrl } : product;
+    })
+  );
+}
+
 export async function searchOpenFoodFactsProducts(query: string): Promise<ProductLookupResult[]> {
   const term = query.trim();
   if (term.length < 3) return [];

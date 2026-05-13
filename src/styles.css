@@ -13,7 +13,7 @@
   --olive: #708049;
   --olive-dark: #4f5f31;
   --ink: #34372b;
-  --on-olive: var(--on-olive);
+  --on-olive: #fff8e8;
   --muted: #746b52;
   --line: rgba(79, 95, 49, 0.18);
   --line-strong: rgba(79, 95, 49, 0.28);
@@ -3669,4 +3669,165 @@ select:focus {
   background:
     linear-gradient(rgba(155, 176, 95, 0.12) 1px, transparent 1px) 0 0 / 100% 25%,
     var(--paper);
+}
+
+/* Mobile polish pass after the dark theme/app-icon work. */
+@media (max-width: 699px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-shell {
+    max-width: 100%;
+    overflow-x: clip;
+    padding: calc(18px + env(safe-area-inset-top)) 14px calc(136px + env(safe-area-inset-bottom));
+  }
+
+  .app-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    align-items: start;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .app-header > div:first-child {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .app-header h1 {
+    max-width: 310px;
+    font-size: clamp(2.35rem, 11.2vw, 3.08rem);
+    line-height: 0.9;
+  }
+
+  .app-header p {
+    max-width: 230px;
+    margin-top: 12px;
+    font-size: 0.98rem;
+    line-height: 1.45;
+  }
+
+  .cat-lockup {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: end;
+    width: 76px;
+    height: 58px;
+    margin: -24px 54px -6px 0;
+    transform: scale(0.78);
+    transform-origin: top right;
+  }
+
+  .header-controls {
+    grid-column: 2;
+    grid-row: 1;
+    margin-left: 0;
+    justify-self: end;
+  }
+
+  .theme-toggle {
+    width: 48px;
+    height: 48px;
+  }
+
+  .calendar-button {
+    display: none;
+  }
+
+  .filter-rail {
+    width: calc(100% + 28px);
+    margin-inline: -14px;
+    padding: 0 14px 18px;
+    scroll-padding-inline: 14px;
+  }
+
+  .filter-rail button {
+    min-height: 42px;
+    padding: 0 13px;
+    font-size: 0.95rem;
+  }
+
+  .page-title {
+    min-width: 0;
+  }
+
+  .page-title h2 {
+    font-size: clamp(2.2rem, 10vw, 3rem);
+  }
+
+  .page-title p {
+    font-size: 0.98rem;
+    line-height: 1.48;
+  }
+
+  .screen-stack {
+    gap: 14px;
+    padding-bottom: 74px;
+  }
+
+  .card {
+    border-radius: 22px;
+    padding: 14px;
+    overflow: hidden;
+  }
+
+  .area-tabs {
+    width: calc(100% + 28px);
+    margin-inline: -14px;
+    padding: 4px 14px 14px;
+    scroll-padding-inline: 14px;
+  }
+
+  .area-tabs button {
+    min-height: 42px;
+    padding: 0 14px;
+  }
+
+  .field span {
+    font-size: 0.9rem;
+  }
+
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    border-radius: 14px;
+    padding-inline: 12px;
+  }
+
+  .food-quick-actions {
+    gap: 8px;
+  }
+
+  .food-quick-actions .scan-launch,
+  .food-quick-actions .search-launch {
+    min-height: 54px;
+    padding-inline: 10px;
+  }
+
+  .bottom-nav {
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: calc(100% - 20px);
+  }
+}
+
+@media (max-width: 360px) {
+  .app-header {
+    grid-template-columns: minmax(0, 1fr) 48px;
+  }
+
+  .cat-lockup {
+    display: none;
+  }
+
+  .food-quick-actions {
+    grid-template-columns: 1fr;
+  }
 }
