@@ -176,6 +176,7 @@ export interface LocalFood {
   carbs: number;
   fat: number;
   servingSize?: string;
+  imageUrl?: string;
   savedAt: string;
   updatedAt?: string;
 }
@@ -212,6 +213,7 @@ export interface ProductLookupResult {
   carbs: number;
   fat: number;
   servingSize?: string;
+  imageUrl?: string;
 }
 
 export interface DashboardExport {

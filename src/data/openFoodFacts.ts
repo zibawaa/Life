@@ -9,6 +9,10 @@ interface OpenFoodFactsResponse {
     product_name?: string;
     brands?: string;
     serving_size?: string;
+    image_front_small_url?: string;
+    image_front_url?: string;
+    image_small_url?: string;
+    image_url?: string;
     nutriments?: Record<string, number | string | undefined>;
   };
 }
@@ -47,6 +51,13 @@ const mapProduct = (barcode: string, product: NonNullable<OpenFoodFactsResponse[
   const useServing = !calories100g && Boolean(servingGrams);
   const baseGrams = useServing ? servingGrams ?? 100 : 100;
 
+  const imageUrl =
+    product.image_front_small_url ||
+    product.image_front_url ||
+    product.image_small_url ||
+    product.image_url ||
+    undefined;
+
   return {
     barcode,
     name: product.product_name || `Barcode ${barcode}`,
@@ -57,7 +68,8 @@ const mapProduct = (barcode: string, product: NonNullable<OpenFoodFactsResponse[
     calories: Math.round(useServing ? caloriesServing : calories100g || caloriesServing),
     protein: Math.round(useServing ? proteinServing : protein100g || proteinServing),
     carbs: Math.round(useServing ? carbsServing : carbs100g || carbsServing),
-    fat: Math.round(useServing ? fatServing : fat100g || fatServing)
+    fat: Math.round(useServing ? fatServing : fat100g || fatServing),
+    imageUrl
   };
 };
 
@@ -67,7 +79,17 @@ export async function lookupOpenFoodFactsProduct(barcode: string): Promise<Produ
     throw new Error('Enter a valid barcode number.');
   }
 
-  const fields = ['code', 'product_name', 'brands', 'serving_size', 'nutriments'].join(',');
+  const fields = [
+    'code',
+    'product_name',
+    'brands',
+    'serving_size',
+    'nutriments',
+    'image_front_small_url',
+    'image_front_url',
+    'image_small_url',
+    'image_url'
+  ].join(',');
 
   const response = await fetch(
     `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(cleanBarcode)}.json?fields=${fields}`,
@@ -90,7 +112,17 @@ export async function searchOpenFoodFactsProducts(query: string): Promise<Produc
   const term = query.trim();
   if (term.length < 3) return [];
 
-  const fields = ['code', 'product_name', 'brands', 'serving_size', 'nutriments'].join(',');
+  const fields = [
+    'code',
+    'product_name',
+    'brands',
+    'serving_size',
+    'nutriments',
+    'image_front_small_url',
+    'image_front_url',
+    'image_small_url',
+    'image_url'
+  ].join(',');
   const params = new URLSearchParams({
     search_terms: term,
     search_simple: '1',

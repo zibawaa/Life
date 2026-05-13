@@ -344,6 +344,7 @@ export function BarcodeScannerModal({
           carbs: product.carbs,
           fat: product.fat,
           servingSize: product.servingSize,
+          imageUrl: product.imageUrl,
           savedAt: now,
           updatedAt: now
         });
@@ -447,9 +448,26 @@ export function BarcodeScannerModal({
 
       {stage === 'review' && product && (
         <div className="scanner-result">
-          <header className="scanner-result-head">
-            <h3>{product.name}</h3>
-            {product.brand && <span>{product.brand}</span>}
+          <header className="scanner-result-head with-image">
+            {product.imageUrl ? (
+              <img
+                className="scanner-product-image"
+                src={product.imageUrl}
+                alt=""
+                referrerPolicy="no-referrer"
+                onError={(event) => {
+                  (event.currentTarget as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="scanner-product-image scanner-product-image--fallback" aria-hidden="true">
+                <ScanBarcode size={26} />
+              </span>
+            )}
+            <div className="scanner-product-info">
+              <h3>{product.name}</h3>
+              {product.brand && <span>{product.brand}</span>}
+            </div>
             <button type="button" className="scanner-close" onClick={onClose} aria-label="Close">
               <X size={22} />
             </button>
