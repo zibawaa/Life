@@ -9,12 +9,8 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# Functions must be matched BEFORE the SPA fallback below
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
+# Netlify's function router runs before this SPA fallback, so /.netlify/functions/*
+# requests hit the function and only non-function paths fall through to index.html.
 [[redirects]]
   from = "/*"
   to = "/index.html"
