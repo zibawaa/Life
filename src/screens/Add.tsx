@@ -250,6 +250,7 @@ export function AddScreen({
   activeType,
   settings,
   editingEntry,
+  localFoods = [],
   onTypeChange,
   onSave,
   onSaveSettings,
@@ -259,6 +260,7 @@ export function AddScreen({
   activeType: EntryType;
   settings: AppSettings;
   editingEntry: DashboardEntry | null;
+  localFoods?: LocalFood[];
   onTypeChange: (type: EntryType) => void;
   onSave: (entry: DashboardEntry) => Promise<void>;
   onSaveSettings: (settings: AppSettings) => Promise<void>;
@@ -370,6 +372,7 @@ export function AddScreen({
         onLog={onSave}
         onSaveLocalFood={onSaveLocalFood}
         defaultDate={form.date || todayKey()}
+        localFoods={localFoods}
       />
       <section className="page-title">
         <h2>{editingEntry ? `Edit ${areaLabels[activeType]}` : 'Add log'}</h2>

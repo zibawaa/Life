@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FoodEntry, LocalFood, MealSlot, ProductLookupResult } from '../types';
 import { generateId, todayKey } from '../data/defaults';
 import { enrichWithImages, searchOpenFoodFactsProducts } from '../data/openFoodFacts';
+import { allFoods, searchFoods } from '../data/foodEngine';
 
 const MEAL_SLOTS: Array<{ key: MealSlot; label: string }> = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -25,18 +26,35 @@ const PROMPT_EXAMPLES = ['aldi tuna', 'costco rotisserie chicken', 'tesco jacket
 const productKey = (product: ProductLookupResult) =>
   product.barcode ? `barcode-${product.barcode}` : `search-${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
+const localFoodToProduct = (food: LocalFood): ProductLookupResult => ({
+  barcode: food.barcode || food.id,
+  name: food.name,
+  brand: food.brand,
+  baseGrams: food.baseGrams ?? 100,
+  servingOptions: food.servingOptions,
+  unverified: food.unverified,
+  calories: food.calories,
+  protein: food.protein,
+  carbs: food.carbs,
+  fat: food.fat,
+  servingSize: food.servingSize,
+  imageUrl: food.imageUrl
+});
+
 export function FoodSearchModal({
   open,
   onClose,
   onLog,
   onSaveLocalFood,
-  defaultDate
+  defaultDate,
+  localFoods = []
 }: {
   open: boolean;
   onClose: () => void;
   onLog: (entry: FoodEntry) => Promise<void>;
   onSaveLocalFood?: (food: LocalFood) => Promise<void>;
   defaultDate?: string;
+  localFoods?: LocalFood[];
 }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ProductLookupResult[]>([]);
@@ -71,30 +89,43 @@ export function FoodSearchModal({
     const token = ++tokenRef.current;
     setSearching(true);
     setSearchMessage('');
+
+    // Local seed + previously-saved foods are searched instantly (no debounce).
+    const merged = allFoods(localFoods);
+    const localHits = searchFoods(trimmed, merged).map(localFoodToProduct);
+    const haveLocal = localHits.length > 0;
+    if (haveLocal) {
+      setResults(localHits);
+    }
+
     const handle = window.setTimeout(() => {
       searchOpenFoodFactsProducts(trimmed)
-        .then(async (items) => {
+        .then(async (online) => {
           if (token !== tokenRef.current) return;
-          // Show fast with whatever images came back from the CGI search,
-          // then enrich missing images in parallel via the v2 product API.
-          setResults(items);
-          setSearchMessage(items.length ? '' : `No matches for "${trimmed}". Try adding a brand name.`);
+          // Merge: local hits first (raw fresh foods are gold), then OFF results
+          // not already covered by a local match on name.
+          const localNames = new Set(localHits.map((p) => p.name.toLowerCase()));
+          const onlineFiltered = online.filter((p) => !localNames.has(p.name.toLowerCase()));
+          const combined = [...localHits, ...onlineFiltered];
+          setResults(combined);
+          setSearchMessage(combined.length ? '' : `No matches for "${trimmed}". Try adding a brand name.`);
           setSearching(false);
 
-          const needsEnrichment = items.some((item) => !item.imageUrl && item.barcode);
+          // Enrich only the online portion; seed foods don't have images.
+          const needsEnrichment = onlineFiltered.some((item) => !item.imageUrl && item.barcode);
           if (!needsEnrichment) return;
-          const enriched = await enrichWithImages(items);
+          const enrichedOnline = await enrichWithImages(onlineFiltered);
           if (token !== tokenRef.current) return;
-          setResults(enriched);
+          setResults([...localHits, ...enrichedOnline]);
         })
         .catch(() => {
           if (token !== tokenRef.current) return;
-          setSearchMessage('Search unavailable. Check your connection.');
+          if (!haveLocal) setSearchMessage('Search unavailable. Check your connection.');
           setSearching(false);
         });
     }, 350);
     return () => window.clearTimeout(handle);
-  }, [open, query]);
+  }, [open, query, localFoods]);
 
   const pick = (product: ProductLookupResult) => {
     setSelected(product);

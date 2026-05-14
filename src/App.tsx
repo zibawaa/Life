@@ -108,6 +108,7 @@ export default function App() {
             activeType={activeEntryType}
             settings={dashboard.settings}
             editingEntry={editingEntry}
+            localFoods={dashboard.localFoods}
             onTypeChange={setActiveEntryType}
             onSave={saveEntry}
             onSaveSettings={dashboard.updateSettings}
