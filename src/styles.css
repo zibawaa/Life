@@ -689,6 +689,43 @@ select {
   color: var(--ink);
   padding: 10px 12px;
   outline: none;
+  font: inherit;
+}
+
+/* Date/time inputs on iOS Safari render their displayed value via a
+   pseudo-element that centers by default and adds odd left padding —
+   force it to align with every other text input and stop overflowing
+   on narrow screens. */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"] {
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+  display: block;
+  font-variant-numeric: tabular-nums;
+  /* iOS reserves space for the value glyph; min-width prevents the box
+     from collapsing below the natural width of the rendered date. */
+  min-width: 0;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value,
+input[type="datetime-local"]::-webkit-date-and-time-value,
+input[type="month"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+  min-height: 24px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  margin-left: auto;
+  opacity: 0.65;
+  cursor: pointer;
 }
 
 textarea {

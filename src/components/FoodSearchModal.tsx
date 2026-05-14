@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, RefreshCw, Search, Soup, X } from 'lucide-re
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FoodEntry, LocalFood, MealSlot, ProductLookupResult } from '../types';
 import { generateId, todayKey } from '../data/defaults';
-import { searchOpenFoodFactsProducts } from '../data/openFoodFacts';
+import { enrichWithImages, searchOpenFoodFactsProducts } from '../data/openFoodFacts';
 
 const MEAL_SLOTS: Array<{ key: MealSlot; label: string }> = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -73,17 +73,23 @@ export function FoodSearchModal({
     setSearchMessage('');
     const handle = window.setTimeout(() => {
       searchOpenFoodFactsProducts(trimmed)
-        .then((items) => {
+        .then(async (items) => {
           if (token !== tokenRef.current) return;
+          // Show fast with whatever images came back from the CGI search,
+          // then enrich missing images in parallel via the v2 product API.
           setResults(items);
           setSearchMessage(items.length ? '' : `No matches for "${trimmed}". Try adding a brand name.`);
+          setSearching(false);
+
+          const needsEnrichment = items.some((item) => !item.imageUrl && item.barcode);
+          if (!needsEnrichment) return;
+          const enriched = await enrichWithImages(items);
+          if (token !== tokenRef.current) return;
+          setResults(enriched);
         })
         .catch(() => {
           if (token !== tokenRef.current) return;
           setSearchMessage('Search unavailable. Check your connection.');
-        })
-        .finally(() => {
-          if (token !== tokenRef.current) return;
           setSearching(false);
         });
     }, 350);
